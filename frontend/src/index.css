@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #1B4F8A;      /* Ko'k — maktab ranggi */
+    --color-secondary: #F5A623;    /* Oltin sariq */
+    --color-accent: #2ECC71;       /* Yashil — muvaffaqiyat */
+    --color-dark: #1A202C;
+    --color-gray: #718096;
+  }
+
+  body {
+    @apply bg-white text-gray-900 antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-800 text-white px-4 py-2 rounded-lg hover:bg-blue-900
+           transition-colors duration-200 font-medium disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600
+           transition-colors duration-200 font-medium;
+  }
+
+  .btn-outline {
+    @apply border border-blue-800 text-blue-800 px-4 py-2 rounded-lg
+           hover:bg-blue-50 transition-colors duration-200 font-medium;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+
+  .input {
+    @apply w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
+           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+           transition-all duration-200;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-blue  { @apply badge bg-blue-100 text-blue-800; }
+  .badge-green { @apply badge bg-green-100 text-green-800; }
+  .badge-amber { @apply badge bg-amber-100 text-amber-800; }
+  .badge-red   { @apply badge bg-red-100 text-red-800; }
+}
+
+/* Animatsiyalar */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}
