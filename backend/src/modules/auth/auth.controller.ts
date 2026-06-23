@@ -13,10 +13,11 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     const result = await loginService(login, password);
 
     // Refresh token → HttpOnly cookie
+    const isProd = process.env.NODE_ENV === 'production';
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax', // Vercel <-> Render cross-site uchun 'none' kerak
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 kun
     });
 
@@ -47,7 +48,12 @@ export const refresh = async (req: Request, res: Response, next: NextFunction) =
 };
 
 export const logout = (_req: Request, res: Response) => {
-  res.clearCookie('refreshToken');
+  const isProd = process.env.NODE_ENV === 'production';
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+  });
   res.json({ success: true, message: 'Chiqildi' });
 };
 
