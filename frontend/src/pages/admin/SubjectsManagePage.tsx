@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Pencil, Trash2, BookOpen, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { Subject } from '../../types';
 
@@ -16,6 +17,7 @@ const EMOJI_SUGGESTIONS = ['📚', '🔢', '🧪', '🌍', '🏛️', '🎨', '�
 const emptyForm: SubjectForm = { name: '', short_name: '', icon: '📚', description: '' };
 
 function Modal({ subject, onClose }: { subject?: Subject | null; onClose: () => void }) {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [form, setForm] = useState<SubjectForm>({
     name: subject?.name ?? '',
@@ -31,23 +33,23 @@ function Modal({ subject, onClose }: { subject?: Subject | null; onClose: () => 
         ? apiClient.put(`/subjects/${subject.id}`, data)
         : apiClient.post('/subjects', data),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['subjects-all'] }); onClose(); },
-    onError: (e: any) => setError(e.response?.data?.message || 'Xatolik'),
+    onError: (e: any) => setError(e.response?.data?.message || t('admin.subjects.genericError')),
   });
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
         <div className="p-5 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-800">{subject ? 'Fanni tahrirlash' : 'Yangi fan'}</h3>
+          <h3 className="font-semibold text-gray-800">{subject ? t('admin.subjects.editTitle') : t('admin.subjects.createTitle')}</h3>
         </div>
         <div className="p-5 space-y-4">
           {error && <p className="text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Fan nomi *</label>
+            <label className="text-sm font-medium text-gray-700 mb-1.5 block">{t('admin.subjects.nameLabel')}</label>
             <input
               className="input w-full"
-              placeholder="masalan: Matematika"
+              placeholder={t('admin.subjects.namePlaceholder')}
               value={form.name}
               onChange={e => setForm(p => ({ ...p, name: e.target.value }))}
             />
@@ -55,7 +57,7 @@ function Modal({ subject, onClose }: { subject?: Subject | null; onClose: () => 
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1.5 block">Qisqa nomi</label>
+              <label className="text-sm font-medium text-gray-700 mb-1.5 block">{t('admin.subjects.shortNameLabel')}</label>
               <input
                 className="input w-full"
                 placeholder="Math"
@@ -64,7 +66,7 @@ function Modal({ subject, onClose }: { subject?: Subject | null; onClose: () => 
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 mb-1.5 block">Emoji belgisi</label>
+              <label className="text-sm font-medium text-gray-700 mb-1.5 block">{t('admin.subjects.iconLabel')}</label>
               <input
                 className="input w-full text-2xl"
                 value={form.icon}
@@ -88,11 +90,11 @@ function Modal({ subject, onClose }: { subject?: Subject | null; onClose: () => 
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 mb-1.5 block">Tavsif</label>
+            <label className="text-sm font-medium text-gray-700 mb-1.5 block">{t('admin.subjects.descriptionLabel')}</label>
             <textarea
               className="input w-full resize-none"
               rows={2}
-              placeholder="Fan haqida qisqacha..."
+              placeholder={t('admin.subjects.descriptionPlaceholder')}
               value={form.description}
               onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
             />
@@ -100,14 +102,14 @@ function Modal({ subject, onClose }: { subject?: Subject | null; onClose: () => 
         </div>
 
         <div className="p-5 border-t border-gray-100 flex gap-3 justify-end">
-          <button onClick={onClose} className="btn-secondary">Bekor</button>
+          <button onClick={onClose} className="btn-secondary">{t('common.cancel')}</button>
           <button
             onClick={() => save.mutate(form)}
             disabled={save.isPending || !form.name.trim()}
             className="btn-primary flex items-center gap-2"
           >
             {save.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-            {subject ? 'Saqlash' : 'Qo\'shish'}
+            {subject ? t('common.save') : t('admin.subjects.add')}
           </button>
         </div>
       </div>
@@ -116,6 +118,7 @@ function Modal({ subject, onClose }: { subject?: Subject | null; onClose: () => 
 }
 
 export default function SubjectsManagePage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [modal, setModal] = useState<{ mode: 'add' } | { mode: 'edit'; subject: Subject } | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Subject | null>(null);
@@ -134,11 +137,11 @@ export default function SubjectsManagePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Fanlar</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{subjects.length} ta fan</p>
+          <h1 className="text-xl font-bold text-gray-800">{t('admin.subjects.title')}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t('admin.subjects.countSuffix', { count: subjects.length })}</p>
         </div>
         <button onClick={() => setModal({ mode: 'add' })} className="btn-primary flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Yangi fan
+          <Plus className="w-4 h-4" /> {t('admin.subjects.newSubject')}
         </button>
       </div>
 
@@ -151,9 +154,9 @@ export default function SubjectsManagePage() {
       ) : !subjects.length ? (
         <div className="card text-center py-16 text-gray-400">
           <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Fan topilmadi</p>
+          <p>{t('admin.subjects.empty')}</p>
           <button onClick={() => setModal({ mode: 'add' })} className="btn-primary mt-4 text-sm">
-            Birinchi fanni qo'shish
+            {t('admin.subjects.addFirst')}
           </button>
         </div>
       ) : (
@@ -167,7 +170,7 @@ export default function SubjectsManagePage() {
                 <p className="font-semibold text-gray-800">{s.name}</p>
                 {s.short_name && <p className="text-xs text-gray-400">{s.short_name}</p>}
                 <p className="text-xs text-gray-500 mt-1">
-                  {s.teacher_count} ta o'qituvchi
+                  {s.teacher_count} {t('admin.subjects.teacherCountSuffix')}
                 </p>
               </div>
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
@@ -199,19 +202,19 @@ export default function SubjectsManagePage() {
       {deleteTarget && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl p-6 max-w-sm w-full">
-            <h3 className="font-semibold text-gray-800 mb-2">Fanni o'chirish</h3>
+            <h3 className="font-semibold text-gray-800 mb-2">{t('admin.subjects.deleteTitle')}</h3>
             <p className="text-sm text-gray-500 mb-5">
-              <strong>{deleteTarget.name}</strong> fanini o'chirasizmi? Bu amal qaytarib bo'lmaydi.
+              <strong>{deleteTarget.name}</strong> {t('admin.subjects.deleteDesc')}
             </p>
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setDeleteTarget(null)} className="btn-secondary">Bekor</button>
+              <button onClick={() => setDeleteTarget(null)} className="btn-secondary">{t('common.cancel')}</button>
               <button
                 onClick={() => deleteFn.mutate(deleteTarget.id)}
                 disabled={deleteFn.isPending}
                 className="bg-red-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-700 flex items-center gap-2"
               >
                 {deleteFn.isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                O'chirish
+                {t('common.delete')}
               </button>
             </div>
           </div>

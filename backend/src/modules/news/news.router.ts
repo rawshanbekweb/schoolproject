@@ -12,7 +12,7 @@ const adminOrContent = [authenticate, authorize('super_admin', 'content_manager'
 const newsSchema = z.object({
   title: z.string().min(3).max(300),
   content: z.string().min(10),
-  cover_url: z.union([z.string().url(), z.literal(''), z.undefined()]),
+  cover_url: z.string().optional().nullable(),
   category: z.enum(['news', 'event', 'announcement']).default('news'),
   is_published: z.boolean().default(false),
 });

@@ -14,7 +14,7 @@ const schema = z.object({
   subject_id: z.number().int().positive().optional(),
   title: z.string().min(3).max(300),
   description: z.string().optional(),
-  photo_url: z.union([z.string().url(), z.literal(''), z.undefined()]),
+  photo_url: z.string().optional().nullable(),
   award_date: z.string().optional(),
   level: z.string().max(50).optional(),
   is_featured: z.boolean().default(false),

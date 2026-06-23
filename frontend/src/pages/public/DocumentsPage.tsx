@@ -2,16 +2,18 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { FileText, Download, File, Calendar, Filter } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { Document, DocumentCategory } from '../../types';
+import { getDateLocale } from '../../i18n/dateLocale';
 
-const CATEGORIES: { value: DocumentCategory | ''; label: string }[] = [
-  { value: '',            label: 'Barchasi' },
-  { value: 'orders',      label: 'Buyruqlar' },
-  { value: 'regulations', label: 'Nizomlar' },
-  { value: 'reports',     label: 'Hisobotlar' },
-  { value: 'plans',       label: 'Rejalar' },
-  { value: 'other',       label: 'Boshqalar' },
+const CATEGORIES: { value: DocumentCategory | ''; labelKey: string }[] = [
+  { value: '',            labelKey: 'public.documents.categories.all' },
+  { value: 'orders',      labelKey: 'public.documents.categories.orders' },
+  { value: 'regulations', labelKey: 'public.documents.categories.regulations' },
+  { value: 'reports',     labelKey: 'public.documents.categories.reports' },
+  { value: 'plans',       labelKey: 'public.documents.categories.plans' },
+  { value: 'other',       labelKey: 'public.documents.categories.other' },
 ];
 
 const FILE_ICONS: Record<string, { color: string; icon: string }> = {
@@ -31,6 +33,7 @@ function formatSize(bytes: number) {
 }
 
 export default function DocumentsPage() {
+  const { t } = useTranslation();
   const [category, setCategory] = useState<DocumentCategory | ''>('');
 
   const { data: docs = [], isLoading } = useQuery<Document[]>({
@@ -49,15 +52,15 @@ export default function DocumentsPage() {
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Hujjatlar</h1>
-        <p className="text-gray-500">Maktabning normativ va ishchi hujjatlari</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">{t('public.documents.title')}</h1>
+        <p className="text-gray-500">{t('public.documents.subtitle')}</p>
       </motion.div>
 
       {/* Category filter */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
         <div className="flex items-center gap-2 mb-3">
           <Filter className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-500">Kategoriya:</span>
+          <span className="text-sm text-gray-500">{t('public.documents.categoryLabel')}</span>
         </div>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map(c => (
@@ -70,7 +73,7 @@ export default function DocumentsPage() {
                   : 'border-gray-200 text-gray-600 hover:border-blue-300'
               }`}
             >
-              {c.label}
+              {t(c.labelKey)}
             </button>
           ))}
         </div>
@@ -86,7 +89,7 @@ export default function DocumentsPage() {
       ) : !docs.length ? (
         <div className="text-center py-16 text-gray-400">
           <FileText className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Hujjatlar topilmadi</p>
+          <p>{t('public.documents.empty')}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -113,7 +116,7 @@ export default function DocumentsPage() {
                     <div className="flex items-center gap-2 shrink-0">
                       <span className="text-xs text-gray-400 flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        {new Date(doc.created_at).toLocaleDateString('uz-UZ')}
+                        {new Date(doc.created_at).toLocaleDateString(getDateLocale())}
                       </span>
                       {doc.file_size > 0 && (
                         <span className="text-xs text-gray-400">{formatSize(doc.file_size)}</span>
@@ -127,7 +130,7 @@ export default function DocumentsPage() {
 
                 {/* Category badge */}
                 <span className="badge badge-blue text-xs shrink-0 hidden sm:inline-flex">
-                  {CATEGORIES.find(c => c.value === doc.category)?.label || doc.category}
+                  {(() => { const c = CATEGORIES.find(c => c.value === doc.category); return c ? t(c.labelKey) : doc.category; })()}
                 </span>
 
                 {/* Download button */}
@@ -137,7 +140,7 @@ export default function DocumentsPage() {
                   className="btn-primary text-sm flex items-center gap-2 shrink-0"
                 >
                   <Download className="w-4 h-4" />
-                  <span className="hidden sm:inline">Yuklab olish</span>
+                  <span className="hidden sm:inline">{t('public.documents.download')}</span>
                 </button>
               </motion.div>
             );

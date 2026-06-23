@@ -1,2 +1,9 @@
 .env
 node_modules
+dist
+
+# tsx/tsc orqali migrations/*.ts dan tasodifan generatsiya bo'lgan fayllar
+migrations/*.js
+migrations/*.js.map
+migrations/*.d.ts
+migrations/*.d.ts.map

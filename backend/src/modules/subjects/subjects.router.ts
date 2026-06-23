@@ -10,7 +10,7 @@ const adminOnly = [authenticate, authorize('super_admin')];
 router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { rows } = await pool.query(
-      `SELECT s.*, COUNT(DISTINCT ts.user_id) AS teacher_count
+      `SELECT s.*, COUNT(DISTINCT ts.teacher_id) AS teacher_count
        FROM subjects s
        LEFT JOIN teacher_subjects ts ON ts.subject_id = s.id
        GROUP BY s.id

@@ -215,9 +215,8 @@ INSERT INTO subjects (name, short_name, icon) VALUES
 ON CONFLICT DO NOTHING;
 
 -- ============================================
--- SEED: Super admin (parol: admin123)
--- bcrypt hash for "admin123"
+-- SEED: Super admin
+-- Login/parol endi migratsiyada qattiq yozilmaydi — backend ishga
+-- tushganda backend/src/utils/seedSuperAdmin.ts orqali .env dagi
+-- SUPERADMIN_LOGIN / SUPERADMIN_PASSWORD asosida avtomatik yaratiladi.
 -- ============================================
-INSERT INTO users (login, password_hash, full_name, role) VALUES
-('admin', '$2b$12$xJAn3FEWCe/JexJvQT.rFuQr01IffcdUSY3snIQfXcotZmyyfQq0.', 'Bosh Administrator', 'super_admin')
-ON CONFLICT DO NOTHING;

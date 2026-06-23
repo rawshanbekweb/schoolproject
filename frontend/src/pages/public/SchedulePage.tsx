@@ -2,10 +2,10 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Calendar, ChevronDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { Class, ScheduleEntry } from '../../types';
 
-const DAYS = ['Dushanba', 'Seshanba', 'Chorshanba', 'Payshanba', 'Juma', 'Shanba'];
 const LESSONS = [1, 2, 3, 4, 5, 6];
 
 function getTimeForLesson(lessonNum: number, shift: 1 | 2): string {
@@ -17,6 +17,8 @@ function getTimeForLesson(lessonNum: number, shift: 1 | 2): string {
 }
 
 export default function SchedulePage() {
+  const { t } = useTranslation();
+  const DAYS = t('public.schedule.days', { returnObjects: true }) as string[];
   const [selectedClass, setSelectedClass] = useState<number | null>(null);
 
   const { data: classes = [], isLoading: classLoad } = useQuery<Class[]>({
@@ -61,8 +63,8 @@ export default function SchedulePage() {
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Dars jadvali</h1>
-        <p className="text-gray-500">Haftalik dars jadvali va vaqtlar</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">{t('public.schedule.title')}</h1>
+        <p className="text-gray-500">{t('public.schedule.subtitle')}</p>
       </motion.div>
 
       {/* Class selector */}
@@ -76,12 +78,12 @@ export default function SchedulePage() {
               onChange={e => setSelectedClass(e.target.value ? Number(e.target.value) : null)}
               className="input w-full sm:w-64 appearance-none pr-10"
             >
-              <option value="">Sinf tanlang...</option>
+              <option value="">{t('public.schedule.selectPlaceholder')}</option>
               {Object.entries(groupedClasses).sort(([a], [b]) => Number(a) - Number(b)).map(([grade, cls]) => (
-                <optgroup key={grade} label={`${grade}-sinflar`}>
+                <optgroup key={grade} label={t('public.schedule.gradeGroup', { grade })}>
                   {cls.map(c => (
                     <option key={c.id} value={c.id}>
-                      {c.name} ({c.shift}-smena, {c.student_count} o'quvchi)
+                      {t('public.schedule.classOption', { name: c.name, shift: c.shift, count: c.student_count })}
                     </option>
                   ))}
                 </optgroup>
@@ -95,7 +97,7 @@ export default function SchedulePage() {
       {!selectedClass ? (
         <div className="text-center py-16 text-gray-400">
           <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>Jadvalini ko'rish uchun sinf tanlang</p>
+          <p>{t('public.schedule.selectPrompt')}</p>
         </div>
       ) : schedLoad ? (
         <div className="overflow-x-auto">
@@ -110,12 +112,12 @@ export default function SchedulePage() {
           {/* Smena belgisi */}
           <div className="flex items-center gap-3 mb-4">
             <span className="badge badge-blue">
-              {selectedClassObj?.shift}-smena
+              {t('public.schedule.shiftBadge', { shift: selectedClassObj?.shift })}
             </span>
-            <span className="text-sm text-gray-500">{selectedClassObj?.name} sinfi</span>
+            <span className="text-sm text-gray-500">{selectedClassObj?.name} {t('public.schedule.classSuffix')}</span>
             {selectedClassObj && (
               <span className="text-xs text-gray-400">
-                {selectedClassObj.shift === 1 ? '08:00 – 12:30' : '13:00 – 17:30'}
+                {selectedClassObj.shift === 1 ? t('public.schedule.shift1Time') : t('public.schedule.shift2Time')}
               </span>
             )}
           </div>
@@ -123,22 +125,22 @@ export default function SchedulePage() {
           {!schedule.length ? (
             <div className="card text-center py-12 text-gray-400">
               <Calendar className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p>Bu sinf uchun jadval kiritilmagan</p>
+              <p>{t('public.schedule.noSchedule')}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[700px] text-sm">
                 <thead>
                   <tr className="bg-blue-900 text-white">
-                    <th className="px-3 py-3 text-left font-medium text-xs w-16">Dars</th>
-                    <th className="px-3 py-3 text-left font-medium text-xs w-16">Vaqt</th>
+                    <th className="px-3 py-3 text-left font-medium text-xs w-16">{t('public.schedule.tableLesson')}</th>
+                    <th className="px-3 py-3 text-left font-medium text-xs w-16">{t('public.schedule.tableTime')}</th>
                     {DAYS.map((d, idx) => (
                       <th key={d} className={`px-3 py-3 text-left font-medium text-xs ${
                         todayDay === idx + 1 ? 'bg-blue-700' : ''
                       }`}>
                         {d}
                         {todayDay === idx + 1 && (
-                          <span className="ml-1 text-blue-300 text-[10px]">• bugun</span>
+                          <span className="ml-1 text-blue-300 text-[10px]">• {t('public.schedule.today')}</span>
                         )}
                       </th>
                     ))}
@@ -169,7 +171,7 @@ export default function SchedulePage() {
                                   </p>
                                   <p className="text-[11px] text-gray-400">{entry.teacher_name}</p>
                                   {entry.room && (
-                                    <p className="text-[10px] text-gray-300">{entry.room}-xona</p>
+                                    <p className="text-[10px] text-gray-300">{entry.room}{t('public.schedule.roomSuffix')}</p>
                                   )}
                                 </div>
                               ) : (

@@ -5,6 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, Cell,
 } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { ClassRanking } from '../../types';
 
@@ -56,6 +57,7 @@ function ScoreBar({ score }: { score: number }) {
 }
 
 export default function ControlWorksPage() {
+  const { t } = useTranslation();
   const [quarter, setQuarter] = useState(1);
   const [year, setYear] = useState(CURRENT_YEAR);
 
@@ -80,9 +82,9 @@ export default function ControlWorksPage() {
           <div className="bg-blue-100 p-2 rounded-xl">
             <TrendingUp className="w-6 h-6 text-blue-700" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Nazorat ishlari reytingi</h1>
+          <h1 className="text-3xl font-bold text-gray-800">{t('public.controlWorks.title')}</h1>
         </div>
-        <p className="text-gray-500">Sinflar o'rtacha ball reytingi chorak bo'yicha</p>
+        <p className="text-gray-500">{t('public.controlWorks.subtitle')}</p>
       </div>
 
       {/* Filters */}
@@ -99,7 +101,7 @@ export default function ControlWorksPage() {
                   : 'text-gray-600 hover:text-gray-800'
               }`}
             >
-              {q}-chorak
+              {t('public.controlWorks.quarterLabel', { q })}
             </button>
           ))}
         </div>
@@ -112,7 +114,7 @@ export default function ControlWorksPage() {
             onChange={e => setYear(Number(e.target.value))}
           >
             {YEARS.map(y => (
-              <option key={y} value={y}>{y}-yil</option>
+              <option key={y} value={y}>{t('public.controlWorks.yearLabel', { y })}</option>
             ))}
           </select>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -128,9 +130,9 @@ export default function ControlWorksPage() {
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <BookOpen className="w-14 h-14 mb-3 opacity-30" />
           <p className="font-medium text-gray-500">
-            {quarter}-chorak, {year}-yil uchun ma'lumot yo'q
+            {t('public.controlWorks.emptyTitle', { quarter, year })}
           </p>
-          <p className="text-sm mt-1">O'qituvchilar nazorat ishi natijalarini kiritgach ko'rinadi</p>
+          <p className="text-sm mt-1">{t('public.controlWorks.emptySub')}</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -138,7 +140,7 @@ export default function ControlWorksPage() {
           <div className="card">
             <h2 className="font-semibold text-gray-800 mb-5 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-blue-700" />
-              Grafik ko'rinish
+              {t('public.controlWorks.chartTitle')}
             </h2>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 20 }}>
@@ -157,7 +159,7 @@ export default function ControlWorksPage() {
                 />
                 <Tooltip
                   contentStyle={{ borderRadius: 8, border: '1px solid #e5e7eb', fontSize: 12 }}
-                  formatter={(v: any) => [`${Number(v).toFixed(2)} ball`, 'O\'rtacha']}
+                  formatter={(v: any) => [`${Number(v).toFixed(2)} ball`, t('public.controlWorks.tooltipAvg')]}
                 />
                 <Bar dataKey="ball" radius={[4, 4, 0, 0]} maxBarSize={40}>
                   {chartData.map((_, i) => (
@@ -176,9 +178,9 @@ export default function ControlWorksPage() {
           <div className="card">
             <h2 className="font-semibold text-gray-800 mb-5 flex items-center gap-2">
               <Trophy className="w-4 h-4 text-amber-500" />
-              Reyting jadvali
+              {t('public.controlWorks.rankingTitle')}
               <span className="ml-auto text-xs text-gray-400 font-normal">
-                {quarter}-chorak, {year}
+                {t('public.controlWorks.quarterLabel', { q: quarter })}, {year}
               </span>
             </h2>
 
@@ -196,7 +198,7 @@ export default function ControlWorksPage() {
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-semibold text-gray-800 text-sm">{item.class_name}</span>
                       <span className="text-xs text-gray-400 ml-2 shrink-0">
-                        {item.subjects_count} ta fan
+                        {t('public.controlWorks.subjectsCount', { count: item.subjects_count })}
                       </span>
                     </div>
                     <ScoreBar score={Number(item.avg_score)} />
@@ -207,9 +209,9 @@ export default function ControlWorksPage() {
 
             {ranking.length > 0 && (
               <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-400">
-                <span>{ranking.length} ta sinf</span>
+                <span>{t('public.controlWorks.classesCount', { count: ranking.length })}</span>
                 <span>
-                  O'rtacha: {(ranking.reduce((s, r) => s + Number(r.avg_score), 0) / ranking.length).toFixed(2)} ball
+                  {t('public.controlWorks.average', { val: (ranking.reduce((s, r) => s + Number(r.avg_score), 0) / ranking.length).toFixed(2) })}
                 </span>
               </div>
             )}
@@ -219,11 +221,11 @@ export default function ControlWorksPage() {
 
       {/* Legend */}
       <div className="mt-6 card">
-        <p className="text-xs text-gray-500 font-medium mb-2">Ball tizimi:</p>
+        <p className="text-xs text-gray-500 font-medium mb-2">{t('public.controlWorks.legendTitle')}</p>
         <div className="flex gap-6 flex-wrap text-xs">
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-500" />4.0 – 5.0: A'lo</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500" />3.0 – 3.9: Qoniqarli</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-400" />0 – 2.9: Qoniqarsiz</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-green-500" />{t('public.controlWorks.legendExcellent')}</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-amber-500" />{t('public.controlWorks.legendOk')}</span>
+          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-red-400" />{t('public.controlWorks.legendBad')}</span>
         </div>
       </div>
     </div>

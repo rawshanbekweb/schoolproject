@@ -1,38 +1,55 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   GraduationCap, LayoutDashboard, Users, Newspaper,
-  Trophy, BarChart3, BookOpen, ClipboardList, LogOut, Menu, X, Home
+  Trophy, BarChart3, BookOpen, LogOut, Menu, Home, FileText, Building2, UserCircle, CalendarDays, Layers
 } from 'lucide-react';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../api/client';
+import PageLoader from '../ui/PageLoader';
 
 interface DashboardLayoutProps {
   role: 'admin' | 'teacher';
 }
 
-const adminLinks = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, exact: true },
-  { to: '/admin/users', label: 'Foydalanuvchilar', icon: Users },
-  { to: '/admin/subjects', label: 'Fanlar', icon: BookOpen },
-  { to: '/admin/news', label: 'Yangiliklar', icon: Newspaper },
-  { to: '/admin/achievements', label: 'Maktab faxrlari', icon: Trophy },
-  { to: '/admin/analytics', label: 'Analitika', icon: BarChart3 },
+const superAdminLinks = [
+  { to: '/admin', labelKey: 'dashboard.nav.dashboard', icon: LayoutDashboard, exact: true },
+  { to: '/admin/users', labelKey: 'dashboard.nav.users', icon: Users },
+  { to: '/admin/subjects', labelKey: 'dashboard.nav.subjects', icon: BookOpen },
+  { to: '/admin/schedule', labelKey: 'dashboard.nav.schedule', icon: CalendarDays },
+  { to: '/admin/news', labelKey: 'dashboard.nav.news', icon: Newspaper },
+  { to: '/admin/achievements', labelKey: 'dashboard.nav.achievements', icon: Trophy },
+  { to: '/admin/school-info', labelKey: 'dashboard.nav.schoolInfo', icon: Building2 },
+  { to: '/admin/analytics', labelKey: 'dashboard.nav.analytics', icon: BarChart3 },
+];
+
+const contentManagerLinks = [
+  { to: '/admin', labelKey: 'dashboard.nav.dashboard', icon: LayoutDashboard, exact: true },
+  { to: '/admin/news', labelKey: 'dashboard.nav.news', icon: Newspaper },
+  { to: '/admin/achievements', labelKey: 'dashboard.nav.achievements', icon: Trophy },
+  { to: '/admin/school-info', labelKey: 'dashboard.nav.schoolInfo', icon: Building2 },
 ];
 
 const teacherLinks = [
-  { to: '/teacher', label: 'Kabinet', icon: LayoutDashboard, exact: true },
-  { to: '/teacher/questions', label: 'Test savollari', icon: BookOpen },
-  { to: '/teacher/control-works', label: 'Nazorat ishlari', icon: ClipboardList },
+  { to: '/teacher', labelKey: 'dashboard.nav.cabinet', icon: LayoutDashboard, exact: true },
+  { to: '/teacher/profile', labelKey: 'dashboard.nav.profile', icon: UserCircle },
+  { to: '/teacher/exams', labelKey: 'dashboard.nav.exams', icon: FileText },
+  { to: '/teacher/block-tests', labelKey: 'dashboard.nav.blockTests', icon: Layers },
 ];
 
 export default function DashboardLayout({ role }: DashboardLayoutProps) {
+  const { t } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
 
-  const links = role === 'admin' ? adminLinks : teacherLinks;
+  const links = role !== 'admin'
+    ? teacherLinks
+    : user?.role === 'content_manager'
+    ? contentManagerLinks
+    : superAdminLinks;
 
   const handleLogout = async () => {
     await apiClient.post('/auth/logout');
@@ -52,9 +69,9 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
             <GraduationCap className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-semibold text-sm text-gray-800">14-Maktab</p>
+            <p className="font-semibold text-sm text-gray-800">{t('nav.schoolName')}</p>
             <p className="text-xs text-gray-500">
-              {role === 'admin' ? 'Admin Panel' : 'O\'qituvchi Kabineti'}
+              {role === 'admin' ? t('dashboard.adminPanel') : t('dashboard.teacherCabinet')}
             </p>
           </div>
         </div>
@@ -71,8 +88,8 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
           <div className="overflow-hidden">
             <p className="text-sm font-medium text-gray-800 truncate">{user?.full_name}</p>
             <p className="text-xs text-gray-500">
-              {user?.role === 'super_admin' ? 'Super Admin' :
-               user?.role === 'content_manager' ? 'Content Manager' : 'O\'qituvchi'}
+              {user?.role === 'super_admin' ? t('dashboard.roleSuperAdmin') :
+               user?.role === 'content_manager' ? t('dashboard.roleContentManager') : t('dashboard.roleTeacher')}
             </p>
           </div>
         </div>
@@ -85,7 +102,7 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors"
         >
           <Home className="w-4 h-4" />
-          Asosiy saytga
+          {t('dashboard.home')}
         </Link>
         <div className="border-t border-gray-100 my-2" />
         {links.map(link => {
@@ -103,7 +120,7 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
               }`}
             >
               <Icon className={`w-4 h-4 ${active ? 'text-blue-700' : ''}`} />
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           );
         })}
@@ -116,7 +133,7 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
           className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-red-500 hover:bg-red-50 w-full transition-colors"
         >
           <LogOut className="w-4 h-4" />
-          Chiqish
+          {t('dashboard.logout')}
         </button>
       </div>
     </div>
@@ -147,13 +164,15 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
             <Menu className="w-5 h-5" />
           </button>
           <span className="font-semibold text-gray-800 text-sm">
-            {role === 'admin' ? 'Admin Panel' : 'O\'qituvchi Kabineti'}
+            {role === 'admin' ? t('dashboard.adminPanel') : t('dashboard.teacherCabinet')}
           </span>
         </header>
 
         {/* Page */}
         <main className="flex-1 overflow-auto p-6">
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>

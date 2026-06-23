@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
-  Plus, Pencil, Trash2, X, Loader2, Eye, EyeOff,
+  Plus, Pencil, Trash2, X, Loader2,
   Newspaper, Search,
 } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { News, NewsCategory } from '../../types';
 import ImageUpload from '../../components/ui/ImageUpload';
+import { getDateLocale } from '../../i18n/dateLocale';
 
-const CATEGORY_LABELS: Record<NewsCategory, string> = {
-  news: 'Yangilik',
-  event: 'Tadbir',
-  announcement: "E'lon",
+const CATEGORY_LABEL_KEYS: Record<NewsCategory, string> = {
+  news: 'public.news.categoryLabels.news',
+  event: 'public.news.categoryLabels.event',
+  announcement: 'public.news.categoryLabels.announcement',
 };
 const CATEGORY_COLORS: Record<NewsCategory, string> = {
   news: 'badge-blue',
@@ -23,17 +25,16 @@ const CATEGORY_COLORS: Record<NewsCategory, string> = {
 };
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('uz-UZ', {
+  return new Date(iso).toLocaleDateString(getDateLocale(), {
     day: 'numeric', month: 'short', year: 'numeric',
   });
 }
 
 const schema = z.object({
-  title: z.string().min(3, 'Sarlavha kamida 3 belgi').max(300),
-  content: z.string().min(10, 'Matn kamida 10 belgi'),
-  cover_url: z.string().url('Noto\'g\'ri URL').optional().or(z.literal('')),
+  title: z.string().min(3, 'admin.news.validation.titleMin').max(300),
+  content: z.string().min(10, 'admin.news.validation.contentMin'),
+  cover_url: z.string().url('admin.news.validation.urlInvalid').optional().or(z.literal('')),
   category: z.enum(['news', 'event', 'announcement']),
-  is_published: z.boolean().default(false),
 });
 type FormData = z.infer<typeof schema>;
 
@@ -45,6 +46,7 @@ function NewsModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<'write' | 'preview'>('write');
   const { register, handleSubmit, watch, control, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -54,16 +56,15 @@ function NewsModal({
           content: item.content ?? '',
           cover_url: item.cover_url ?? '',
           category: item.category,
-          is_published: item.is_published ?? false,
         }
-      : { category: 'news', is_published: false },
+      : { category: 'news' },
   });
 
   const content = watch('content');
   const title = watch('title');
 
   const onSubmit = async (data: FormData) => {
-    const payload = { ...data, cover_url: data.cover_url || undefined };
+    const payload = { ...data, cover_url: data.cover_url || undefined, is_published: true };
     if (item) {
       await apiClient.put(`/news/${item.id}`, payload);
     } else {
@@ -79,7 +80,7 @@ function NewsModal({
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100 shrink-0">
           <h2 className="font-semibold text-gray-800">
-            {item ? 'Yangilikni tahrirlash' : 'Yangi yangilik'}
+            {item ? t('admin.news.editTitle') : t('admin.news.createTitle')}
           </h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
             <X className="w-5 h-5 text-gray-500" />
@@ -92,32 +93,26 @@ function NewsModal({
             {/* Title */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Sarlavha <span className="text-red-500">*</span>
+                {t('admin.news.titleLabel')} <span className="text-red-500">*</span>
               </label>
-              <input className="input text-base font-medium" placeholder="Yangilik sarlavhasi..."
+              <input className="input text-base font-medium" placeholder={t('admin.news.titlePlaceholder')}
                 {...register('title')} />
-              {errors.title && <p className="text-red-500 text-xs mt-1">{errors.title.message}</p>}
+              {errors.title && <p className="text-red-500 text-xs mt-1">{t(errors.title.message!)}</p>}
             </div>
 
-            {/* Category + Published */}
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Kategoriya</label>
-                <div className="flex gap-2">
-                  {(['news', 'event', 'announcement'] as NewsCategory[]).map(cat => (
-                    <label key={cat} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 cursor-pointer text-xs font-medium transition-colors ${
-                      watch('category') === cat ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600'
-                    }`}>
-                      <input type="radio" value={cat} {...register('category')} className="sr-only" />
-                      {CATEGORY_LABELS[cat]}
-                    </label>
-                  ))}
-                </div>
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('admin.news.categoryLabel')}</label>
+              <div className="flex gap-2">
+                {(['news', 'event', 'announcement'] as NewsCategory[]).map(cat => (
+                  <label key={cat} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border-2 cursor-pointer text-xs font-medium transition-colors ${
+                    watch('category') === cat ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600'
+                  }`}>
+                    <input type="radio" value={cat} {...register('category')} className="sr-only" />
+                    {t(CATEGORY_LABEL_KEYS[cat])}
+                  </label>
+                ))}
               </div>
-              <label className="flex items-center gap-2 cursor-pointer mt-5">
-                <input type="checkbox" {...register('is_published')} className="w-4 h-4 rounded" />
-                <span className="text-sm font-medium text-gray-700">Nashr qilish</span>
-              </label>
             </div>
 
             {/* Cover image */}
@@ -126,7 +121,7 @@ function NewsModal({
               control={control}
               render={({ field }) => (
                 <ImageUpload
-                  label="Muqova rasmi (ixtiyoriy)"
+                  label={t('admin.news.coverLabel')}
                   value={field.value ?? ''}
                   onChange={field.onChange}
                 />
@@ -137,20 +132,20 @@ function NewsModal({
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-medium text-gray-700">
-                  Matn <span className="text-red-500">*</span>
+                  {t('admin.news.contentLabel')} <span className="text-red-500">*</span>
                 </label>
                 <div className="flex gap-1 bg-gray-100 p-0.5 rounded-lg">
                   <button type="button" onClick={() => setTab('write')}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                       tab === 'write' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500'
                     }`}>
-                    Yozish
+                    {t('admin.news.tabWrite')}
                   </button>
                   <button type="button" onClick={() => setTab('preview')}
                     className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
                       tab === 'preview' ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500'
                     }`}>
-                    Ko'rish
+                    {t('admin.news.tabPreview')}
                   </button>
                 </div>
               </div>
@@ -159,7 +154,7 @@ function NewsModal({
                 <textarea
                   className="input resize-none font-mono text-sm"
                   rows={12}
-                  placeholder="Yangilik matnini yozing...&#10;&#10;Bo'sh qator — yangi paragraf."
+                  placeholder={t('admin.news.contentPlaceholder')}
                   {...register('content')}
                 />
               ) : (
@@ -170,18 +165,18 @@ function NewsModal({
                       ? <p key={i} className="text-gray-700 mb-3 leading-relaxed text-sm">{para}</p>
                       : <div key={i} className="h-2" />
                   )}
-                  {!content && <p className="text-gray-400 text-sm">Yozish tabida matn kiriting...</p>}
+                  {!content && <p className="text-gray-400 text-sm">{t('admin.news.previewEmpty')}</p>}
                 </div>
               )}
-              {errors.content && <p className="text-red-500 text-xs mt-1">{errors.content.message}</p>}
+              {errors.content && <p className="text-red-500 text-xs mt-1">{t(errors.content.message!)}</p>}
             </div>
           </div>
 
           {/* Footer */}
           <div className="p-5 border-t border-gray-100 flex gap-3 shrink-0">
-            <button type="button" onClick={onClose} className="btn-outline flex-1">Bekor</button>
+            <button type="button" onClick={onClose} className="btn-outline flex-1">{t('common.cancel')}</button>
             <button type="submit" className="btn-primary flex-1 flex items-center justify-center gap-2" disabled={isSubmitting}>
-              {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" />Saqlanmoqda...</> : 'Saqlash'}
+              {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t('common.saving')}</> : t('common.save')}
             </button>
           </div>
         </form>
@@ -190,34 +185,9 @@ function NewsModal({
   );
 }
 
-// ── Toggle publish ──
-function TogglePublish({ item, onDone }: { item: News; onDone: () => void }) {
-  const [loading, setLoading] = useState(false);
-  return (
-    <button
-      onClick={async () => {
-        setLoading(true);
-        await apiClient.put(`/news/${item.id}`, { is_published: !item.is_published });
-        onDone();
-        setLoading(false);
-      }}
-      disabled={loading}
-      className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-lg transition-colors ${
-        item.is_published
-          ? 'bg-green-50 text-green-700 hover:bg-green-100'
-          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-      }`}
-      title={item.is_published ? 'Nashrni bekor qilish' : 'Nashr qilish'}
-    >
-      {loading ? <Loader2 className="w-3 h-3 animate-spin" />
-        : item.is_published ? <><Eye className="w-3 h-3" />Nashr</>
-        : <><EyeOff className="w-3 h-3" />Qoralama</>}
-    </button>
-  );
-}
-
 // ── Main ──
 export default function NewsManagePage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [modal, setModal] = useState<News | null | undefined>(undefined);
   const [deleteItem, setDeleteItem] = useState<News | null>(null);
@@ -247,11 +217,11 @@ export default function NewsManagePage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Yangiliklar boshqaruvi</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{news.length} ta yangilik</p>
+          <h1 className="text-2xl font-bold text-gray-800">{t('admin.news.title')}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t('admin.news.countSuffix', { count: news.length })}</p>
         </div>
         <button className="btn-primary flex items-center gap-2" onClick={() => setModal(null)}>
-          <Plus className="w-4 h-4" /> Yangi yangilik
+          <Plus className="w-4 h-4" /> {t('admin.news.newItem')}
         </button>
       </div>
 
@@ -259,15 +229,15 @@ export default function NewsManagePage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input className="input pl-9" placeholder="Sarlavha bo'yicha qidirish..."
+          <input className="input pl-9" placeholder={t('admin.news.searchPlaceholder')}
             value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div className="flex gap-1.5 bg-gray-100 p-1 rounded-xl shrink-0">
           {[
-            { value: '', label: 'Barchasi' },
-            { value: 'news', label: 'Yangilik' },
-            { value: 'event', label: 'Tadbir' },
-            { value: 'announcement', label: "E'lon" },
+            { value: '', label: t('common.all') },
+            { value: 'news', label: t('public.news.categoryLabels.news') },
+            { value: 'event', label: t('public.news.categoryLabels.event') },
+            { value: 'announcement', label: t('public.news.categoryLabels.announcement') },
           ].map(f => (
             <button key={f.value} onClick={() => setCategoryFilter(f.value)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
@@ -287,18 +257,17 @@ export default function NewsManagePage() {
       ) : filtered.length === 0 ? (
         <div className="card flex flex-col items-center py-14 text-gray-400">
           <Newspaper className="w-12 h-12 mb-3 opacity-30" />
-          <p className="text-gray-500">{search ? 'Hech narsa topilmadi' : 'Yangiliklar yo\'q'}</p>
+          <p className="text-gray-500">{search ? t('admin.news.noResults') : t('admin.news.empty')}</p>
         </div>
       ) : (
         <div className="card overflow-hidden p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3">Sarlavha</th>
-                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3 hidden sm:table-cell">Kategoriya</th>
-                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3 hidden md:table-cell">Sana</th>
-                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3">Holat</th>
-                <th className="text-right text-xs font-semibold text-gray-500 px-4 py-3">Amallar</th>
+                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3">{t('admin.news.tableTitle')}</th>
+                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3 hidden sm:table-cell">{t('admin.news.tableCategory')}</th>
+                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3 hidden md:table-cell">{t('admin.news.tableDate')}</th>
+                <th className="text-right text-xs font-semibold text-gray-500 px-4 py-3">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -316,13 +285,10 @@ export default function NewsManagePage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className={`badge ${CATEGORY_COLORS[n.category]}`}>{CATEGORY_LABELS[n.category]}</span>
+                    <span className={`badge ${CATEGORY_COLORS[n.category]}`}>{t(CATEGORY_LABEL_KEYS[n.category])}</span>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     <span className="text-xs text-gray-500">{n.published_at ? formatDate(n.published_at) : '—'}</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <TogglePublish item={n} onDone={refresh} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
@@ -353,17 +319,17 @@ export default function NewsManagePage() {
             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-6 h-6 text-red-600" />
             </div>
-            <h3 className="font-semibold text-gray-800 mb-2">Yangilikni o'chirasizmi?</h3>
+            <h3 className="font-semibold text-gray-800 mb-2">{t('admin.news.confirmDeleteTitle')}</h3>
             <p className="text-sm text-gray-500 mb-5 line-clamp-2">{deleteItem.title}</p>
             <div className="flex gap-3">
-              <button className="btn-outline flex-1" onClick={() => setDeleteItem(null)}>Bekor</button>
+              <button className="btn-outline flex-1" onClick={() => setDeleteItem(null)}>{t('common.cancel')}</button>
               <button
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 disabled={deleteMutation.isPending}
                 onClick={() => deleteMutation.mutate(deleteItem.id)}
               >
                 {deleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                O'chirish
+                {t('common.delete')}
               </button>
             </div>
           </div>

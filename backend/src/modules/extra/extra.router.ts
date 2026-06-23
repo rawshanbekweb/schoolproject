@@ -1,4 +1,5 @@
 import { Router, Request, Response, NextFunction } from 'express';
+import { z } from 'zod';
 import { pool } from '../../config/db';
 import { authenticate, authorize } from '../../middleware/auth';
 import { AppError } from '../../middleware/errorHandler';
@@ -6,6 +7,32 @@ import { AppError } from '../../middleware/errorHandler';
 const router = Router();
 const adminOrContent = [authenticate, authorize('super_admin', 'content_manager')];
 const adminOnly = [authenticate, authorize('super_admin')];
+
+const documentSchema = z.object({
+  title: z.string().trim().min(1).max(300),
+  description: z.string().trim().max(2000).optional().nullable(),
+  file_url: z.string().trim().min(1).max(1000),
+  file_size: z.coerce.number().int().min(0).max(50 * 1024 * 1024).optional().default(0),
+  file_type: z.string().trim().min(1).max(20).optional().default('pdf'),
+  category: z.enum(['orders', 'regulations', 'reports', 'plans', 'other']).optional().default('other'),
+  is_public: z.coerce.boolean().optional().default(true),
+});
+
+const classSchema = z.object({
+  name: z.string().trim().min(1).max(20),
+  grade: z.coerce.number().int().min(1).max(11),
+  letter: z.string().trim().min(1).max(5),
+  shift: z.coerce.number().int().min(1).max(2).optional().default(1),
+  student_count: z.coerce.number().int().min(0).max(60).optional().default(0),
+});
+
+const contactSchema = z.object({
+  full_name: z.string().trim().min(1).max(200),
+  phone: z.string().trim().max(30).optional().nullable(),
+  email: z.string().trim().email().max(200).optional().nullable().or(z.literal('')),
+  subject: z.string().trim().min(1).max(300),
+  message: z.string().trim().min(10).max(5000),
+});
 
 // ===== MAKTAB HAQIDA (school-info) =====
 
@@ -41,8 +68,24 @@ router.post('/school-info/management', ...adminOrContent, async (req: Request, r
   } catch (err) { next(err); }
 });
 
+// PUT /api/school-info/management/:id
+router.put('/school-info/management/:id', ...adminOrContent, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { full_name, position, photo_url, phone, email, order_num, is_active } = req.body;
+    if (!full_name?.trim() || !position?.trim()) throw new AppError('Ism va lavozim majburiy', 400);
+    const { rows } = await pool.query(
+      `UPDATE management SET full_name=$1, position=$2, photo_url=$3, phone=$4, email=$5, order_num=$6, is_active=$7
+       WHERE id=$8 RETURNING *`,
+      [full_name.trim(), position.trim(), photo_url || null, phone || null, email || null,
+       order_num ?? 0, is_active ?? true, Number(req.params.id)]
+    );
+    if (!rows[0]) throw new AppError('Topilmadi', 404);
+    res.json({ success: true, data: rows[0] });
+  } catch (err) { next(err); }
+});
+
 // DELETE /api/school-info/management/:id
-router.delete('/school-info/management/:id', ...adminOnly, async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/school-info/management/:id', ...adminOrContent, async (req: Request, res: Response, next: NextFunction) => {
   try {
     await pool.query('DELETE FROM management WHERE id = $1', [Number(req.params.id)]);
     res.json({ success: true });
@@ -78,15 +121,11 @@ router.put('/school-info/:key', ...adminOrContent, async (req: Request, res: Res
 // POST /api/contacts  (public)
 router.post('/contacts', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { full_name, phone, email, subject, message } = req.body;
-    if (!full_name?.trim() || !subject?.trim() || !message?.trim()) {
-      throw new AppError('Ism, mavzu va xabar majburiy', 400);
-    }
-    if (message.length < 10) throw new AppError('Xabar kamida 10 belgi bo\'lishi kerak', 400);
+    const body = contactSchema.parse(req.body);
     const { rows } = await pool.query(
       `INSERT INTO contact_messages (full_name, phone, email, subject, message)
        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
-      [full_name.trim(), phone || null, email || null, subject.trim(), message.trim()]
+      [body.full_name, body.phone || null, body.email || null, body.subject, body.message]
     );
     res.status(201).json({ success: true, data: rows[0], message: 'Xabaringiz qabul qilindi' });
   } catch (err) { next(err); }
@@ -113,7 +152,7 @@ router.patch('/contacts/:id/status', ...adminOnly, async (req: Request, res: Res
     const { status } = req.body;
     if (!['new', 'read', 'replied'].includes(status)) throw new AppError('Noto\'g\'ri status', 400);
     await pool.query(
-      `UPDATE contact_messages SET status=$1, replied_at = CASE WHEN $1='replied' THEN NOW() ELSE replied_at END WHERE id=$2`,
+      `UPDATE contact_messages SET status=$1, replied_at = CASE WHEN $1::varchar='replied' THEN NOW() ELSE replied_at END WHERE id=$2`,
       [status, Number(req.params.id)]
     );
     res.json({ success: true });
@@ -126,9 +165,9 @@ router.patch('/contacts/:id/status', ...adminOnly, async (req: Request, res: Res
 router.get('/documents', async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { category } = req.query;
-    let where = 'WHERE is_public = true';
+    let where = 'WHERE d.is_public = true';
     const params: any[] = [];
-    if (category) { params.push(category); where += ` AND category = $${params.length}`; }
+    if (category) { params.push(category); where += ` AND d.category = $${params.length}`; }
     const { rows } = await pool.query(
       `SELECT d.*, u.full_name AS uploader_name FROM documents d
        LEFT JOIN users u ON u.id = d.uploader_id
@@ -143,13 +182,12 @@ router.get('/documents', async (req: Request, res: Response, next: NextFunction)
 // POST /api/documents  (adminOrContent)
 router.post('/documents', ...adminOrContent, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { title, description, file_url, file_size, file_type, category, is_public } = req.body;
-    if (!title?.trim() || !file_url?.trim()) throw new AppError('Sarlavha va fayl URL majburiy', 400);
+    const body = documentSchema.parse(req.body);
     const { rows } = await pool.query(
       `INSERT INTO documents (uploader_id, title, description, file_url, file_size, file_type, category, is_public)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-      [req.user!.userId, title.trim(), description || null, file_url.trim(),
-       file_size || 0, file_type || 'pdf', category || 'other', is_public ?? true]
+      [req.user!.userId, body.title, body.description || null, body.file_url,
+       body.file_size, body.file_type, body.category, body.is_public]
     );
     res.status(201).json({ success: true, data: rows[0] });
   } catch (err) { next(err); }
@@ -196,7 +234,7 @@ router.get('/teachers', async (req: Request, res: Response, next: NextFunction) 
                 FILTER (WHERE s.id IS NOT NULL), '[]') AS subjects,
               ROUND(
                 (COALESCE(AVG(cws.score),0)/5.0*0.6 +
-                 LEAST(COUNT(DISTINCT q.id)::float/50.0,1.0)*0.4)*10, 1
+                 LEAST(COUNT(DISTINCT q.id)::numeric/50.0,1.0)*0.4)*10, 1
               ) AS rating
        FROM users u
        LEFT JOIN teacher_subjects tss ON tss.teacher_id = u.id
@@ -253,12 +291,11 @@ router.get('/classes', async (req: Request, res: Response, next: NextFunction) =
 // POST /api/classes  (admin)
 router.post('/classes', ...adminOnly, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name, grade, letter, shift, student_count } = req.body;
-    if (!name?.trim() || !grade || !letter?.trim()) throw new AppError('Sinf nomi, daraja va harfi majburiy', 400);
+    const body = classSchema.parse(req.body);
     const { rows } = await pool.query(
       `INSERT INTO classes (name, grade, letter, shift, student_count)
        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
-      [name.trim(), Number(grade), letter.trim().toUpperCase(), shift || 1, student_count || 0]
+      [body.name, body.grade, body.letter.toUpperCase(), body.shift, body.student_count]
     );
     res.status(201).json({ success: true, data: rows[0] });
   } catch (err) { next(err); }
@@ -267,11 +304,11 @@ router.post('/classes', ...adminOnly, async (req: Request, res: Response, next: 
 // PUT /api/classes/:id
 router.put('/classes/:id', ...adminOnly, async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { name, grade, letter, shift, student_count } = req.body;
+    const body = classSchema.parse(req.body);
     const { rows } = await pool.query(
       `UPDATE classes SET name=$1, grade=$2, letter=$3, shift=$4, student_count=$5
        WHERE id=$6 RETURNING *`,
-      [name, Number(grade), letter?.toUpperCase(), shift, student_count, Number(req.params.id)]
+      [body.name, body.grade, body.letter.toUpperCase(), body.shift, body.student_count, Number(req.params.id)]
     );
     if (!rows[0]) throw new AppError('Sinf topilmadi', 404);
     res.json({ success: true, data: rows[0] });

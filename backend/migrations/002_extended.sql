@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS management (
 -- Boshlang'ich rahbariyat
 INSERT INTO management (full_name, position, order_num) VALUES
   ('Direktoring Ismi Familiyasi', 'Maktab direktori', 1),
-  ('Mudir Ismi Familiyasi', "O'quv ishlari bo'yicha direktor o'rinbosari", 2),
-  ('Tarbiya Mudir Ismi', "Tarbiya ishlari bo'yicha direktor o'rinbosari", 3)
+  ('Mudir Ismi Familiyasi', 'O''quv ishlari bo''yicha direktor o''rinbosari', 2),
+  ('Tarbiya Mudir Ismi', 'Tarbiya ishlari bo''yicha direktor o''rinbosari', 3)
 ON CONFLICT DO NOTHING;
 
 -- MUROJAAT XABARLARI

@@ -5,6 +5,7 @@ import {
   ResponsiveContainer, Cell,
 } from 'recharts';
 import { Trophy, BarChart2, Users, BookOpen, Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 
 interface TeacherRating {
@@ -39,6 +40,7 @@ function RatingBadge({ rating }: { rating: number }) {
 }
 
 export default function AnalyticsPage() {
+  const { t } = useTranslation();
   const [quarter, setQuarter] = useState(1);
   const [year, setYear] = useState(CURRENT_YEAR);
 
@@ -86,16 +88,16 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-gray-800">Tahlil va statistika</h1>
-        <p className="text-sm text-gray-500 mt-0.5">O'qituvchilar va sinflar ko'rsatkichlari</p>
+        <h1 className="text-xl font-bold text-gray-800">{t('admin.analytics.title')}</h1>
+        <p className="text-sm text-gray-500 mt-0.5">{t('admin.analytics.subtitle')}</p>
       </div>
 
       {/* Teacher ratings */}
       <div className="card">
         <div className="flex items-center gap-2 mb-5">
           <Trophy className="w-5 h-5 text-amber-500" />
-          <h2 className="font-semibold text-gray-800">O'qituvchilar reytingi</h2>
-          <span className="ml-auto text-xs text-gray-400">{teachers.length} ta o'qituvchi</span>
+          <h2 className="font-semibold text-gray-800">{t('admin.analytics.teacherRatingsTitle')}</h2>
+          <span className="ml-auto text-xs text-gray-400">{t('admin.analytics.teacherCountSuffix', { count: teachers.length })}</span>
         </div>
 
         {tLoad ? (
@@ -105,7 +107,7 @@ export default function AnalyticsPage() {
         ) : !teachers.length ? (
           <div className="text-center py-12 text-gray-400">
             <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">O'qituvchilar topilmadi</p>
+            <p className="text-sm">{t('admin.analytics.teachersNotFound')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -117,7 +119,7 @@ export default function AnalyticsPage() {
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                   <YAxis domain={[0, 10]} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                   <Tooltip
-                    formatter={(v: number) => [v.toFixed(1), 'Reyting']}
+                    formatter={(v: number) => [v.toFixed(1), t('admin.analytics.tooltipRating')]}
                     contentStyle={{ borderRadius: 8, border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                   />
                   <Bar dataKey="rating" radius={[4, 4, 0, 0]} maxBarSize={40}>
@@ -131,26 +133,26 @@ export default function AnalyticsPage() {
 
             {/* Table */}
             <div className="overflow-auto max-h-64 space-y-2 pr-1">
-              {teachers.map((t, i) => (
-                <div key={t.teacher_id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg">
+              {teachers.map((teacher, i) => (
+                <div key={teacher.teacher_id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg">
                   <span className="text-xs text-gray-400 w-5 text-right shrink-0">{i + 1}</span>
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0 overflow-hidden">
-                    {t.photo_url
-                      ? <img src={t.photo_url} alt={t.full_name} className="w-full h-full object-cover" />
-                      : <span className="text-sm font-semibold text-blue-700">{t.full_name[0]}</span>}
+                    {teacher.photo_url
+                      ? <img src={teacher.photo_url} alt={teacher.full_name} className="w-full h-full object-cover" />
+                      : <span className="text-sm font-semibold text-blue-700">{teacher.full_name[0]}</span>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-700 truncate">{t.full_name}</p>
+                    <p className="text-sm font-medium text-gray-700 truncate">{teacher.full_name}</p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <span className="text-xs text-gray-400">
-                        <BookOpen className="w-3 h-3 inline mr-0.5" />{t.questions_count} savol
+                        <BookOpen className="w-3 h-3 inline mr-0.5" />{teacher.questions_count} {t('admin.analytics.questionsSuffix')}
                       </span>
-                      {Array.isArray(t.subjects) && t.subjects.length > 0 && (
-                        <span className="text-xs text-gray-400">· {t.subjects.slice(0, 2).join(', ')}</span>
+                      {Array.isArray(teacher.subjects) && teacher.subjects.length > 0 && (
+                        <span className="text-xs text-gray-400">· {teacher.subjects.slice(0, 2).join(', ')}</span>
                       )}
                     </div>
                   </div>
-                  <RatingBadge rating={t.rating} />
+                  <RatingBadge rating={teacher.rating} />
                 </div>
               ))}
             </div>
@@ -163,7 +165,7 @@ export default function AnalyticsPage() {
         <div className="flex flex-wrap items-center gap-3 mb-5">
           <div className="flex items-center gap-2">
             <BarChart2 className="w-5 h-5 text-blue-600" />
-            <h2 className="font-semibold text-gray-800">Sinflar o'rtacha baholari</h2>
+            <h2 className="font-semibold text-gray-800">{t('admin.analytics.classAvgTitle')}</h2>
           </div>
 
           <div className="ml-auto flex items-center gap-2 flex-wrap">
@@ -172,7 +174,7 @@ export default function AnalyticsPage() {
               onChange={e => setYear(Number(e.target.value))}
               className="text-sm border border-gray-200 rounded-lg px-2 py-1 outline-none"
             >
-              {YEARS.map(y => <option key={y} value={y}>{y}-yil</option>)}
+              {YEARS.map(y => <option key={y} value={y}>{t('admin.analytics.yearOption', { y })}</option>)}
             </select>
             <div className="flex border border-gray-200 rounded-lg overflow-hidden">
               {QUARTERS.map(q => (
@@ -181,7 +183,7 @@ export default function AnalyticsPage() {
                   onClick={() => setQuarter(q)}
                   className={`px-3 py-1 text-sm transition-colors ${quarter === q ? 'bg-blue-700 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
-                  {q}-chorak
+                  {t('admin.analytics.quarterOption', { q })}
                 </button>
               ))}
             </div>
@@ -195,8 +197,8 @@ export default function AnalyticsPage() {
         ) : !classChartData.length ? (
           <div className="text-center py-12 text-gray-400">
             <BarChart2 className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p className="text-sm">Bu chorak uchun ma'lumot yo'q</p>
-            <p className="text-xs mt-1">Nazorat ishi ballari kiritilsa, bu yerda ko'rinadi</p>
+            <p className="text-sm">{t('admin.analytics.noQuarterData')}</p>
+            <p className="text-xs mt-1">{t('admin.analytics.noQuarterDataSub')}</p>
           </div>
         ) : (
           <>
@@ -233,10 +235,10 @@ export default function AnalyticsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="text-left py-2 text-xs font-medium text-gray-500">Sinf</th>
-                    <th className="text-left py-2 text-xs font-medium text-gray-500">Fan</th>
-                    <th className="text-right py-2 text-xs font-medium text-gray-500">O'rt. ball</th>
-                    <th className="text-right py-2 text-xs font-medium text-gray-500">O'quvchilar</th>
+                    <th className="text-left py-2 text-xs font-medium text-gray-500">{t('admin.analytics.tableClass')}</th>
+                    <th className="text-left py-2 text-xs font-medium text-gray-500">{t('admin.analytics.tableSubject')}</th>
+                    <th className="text-right py-2 text-xs font-medium text-gray-500">{t('admin.analytics.tableAvgScore')}</th>
+                    <th className="text-right py-2 text-xs font-medium text-gray-500">{t('admin.analytics.tableStudents')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -264,23 +266,23 @@ export default function AnalyticsPage() {
         <div className="card">
           <div className="flex items-center gap-2 mb-5">
             <Star className="w-5 h-5 text-amber-500" />
-            <h2 className="font-semibold text-gray-800">Top 3 o'qituvchi</h2>
+            <h2 className="font-semibold text-gray-800">{t('admin.analytics.top3Title')}</h2>
           </div>
           <div className="flex items-end justify-center gap-4">
-            {[teachers[1], teachers[0], teachers[2]].map((t, idx) => {
+            {[teachers[1], teachers[0], teachers[2]].map((teacher, idx) => {
               const heights = ['h-24', 'h-32', 'h-20'];
               const medals = ['🥈', '🥇', '🥉'];
               const positions = [2, 1, 3];
               return (
-                <div key={t.teacher_id} className="flex flex-col items-center gap-2 flex-1 max-w-[120px]">
+                <div key={teacher.teacher_id} className="flex flex-col items-center gap-2 flex-1 max-w-[120px]">
                   <span className="text-2xl">{medals[idx]}</span>
                   <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden">
-                    {t.photo_url
-                      ? <img src={t.photo_url} alt={t.full_name} className="w-full h-full object-cover" />
-                      : <span className="text-lg font-bold text-blue-700">{t.full_name[0]}</span>}
+                    {teacher.photo_url
+                      ? <img src={teacher.photo_url} alt={teacher.full_name} className="w-full h-full object-cover" />
+                      : <span className="text-lg font-bold text-blue-700">{teacher.full_name[0]}</span>}
                   </div>
-                  <p className="text-xs font-medium text-gray-700 text-center line-clamp-2">{t.full_name}</p>
-                  <RatingBadge rating={t.rating} />
+                  <p className="text-xs font-medium text-gray-700 text-center line-clamp-2">{teacher.full_name}</p>
+                  <RatingBadge rating={teacher.rating} />
                   <div className={`w-full ${heights[idx]} rounded-t-lg flex items-end justify-center pb-2 text-white font-bold text-lg`}
                     style={{ background: idx === 1 ? '#f59e0b' : idx === 0 ? '#94a3b8' : '#cd7c32' }}>
                     {positions[idx]}

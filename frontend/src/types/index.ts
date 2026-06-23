@@ -170,6 +170,53 @@ export interface TestConfig {
   created_at: string;
 }
 
+// ===== BLOK TEST (DTM uslubidagi) =====
+export interface BlockTestSection {
+  id: number;
+  subject_id: number;
+  subject_name: string;
+  question_count: number;
+  points_per_question: number;
+  available_questions?: number;
+}
+
+export interface BlockTest {
+  id: number;
+  teacher_id: number | null;
+  teacher_name?: string | null;
+  title: string;
+  description: string | null;
+  grade_level: number | null;
+  time_limit: number;
+  target_classes: string[];
+  is_active: boolean;
+  sections: BlockTestSection[];
+  total_questions: number;
+  max_score: number;
+  sessions_count?: number;
+  created_at: string;
+}
+
+export interface BlockTestSectionResult {
+  section_id: number;
+  subject_id: number;
+  subject_name: string;
+  correct_q: number;
+  total_q: number;
+  score: number;
+}
+
+export interface BlockTestSessionResult {
+  id: number;
+  student_name: string;
+  class_name: string | null;
+  total_score: number;
+  max_score: number;
+  section_results: BlockTestSectionResult[];
+  time_spent: number | null;
+  finished_at: string;
+}
+
 // ===== MAKTAB HAQIDA =====
 export interface SchoolInfo {
   id: number;

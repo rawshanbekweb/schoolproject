@@ -1,6 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { JwtPayload } from '../types';
 
+if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || !process.env.JWT_REFRESH_SECRET)) {
+  throw new Error('JWT_SECRET va JWT_REFRESH_SECRET production muhitida .env da albatta belgilanishi kerak');
+}
+
 const ACCESS_SECRET = process.env.JWT_SECRET || 'changeme_access';
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'changeme_refresh';
 

@@ -72,8 +72,8 @@ router.post(
   }
 );
 
-// GET /api/media
-router.get('/', ...adminOrContent, async (_req: Request, res: Response, next: NextFunction) => {
+// GET /api/media (public - galereya uchun)
+router.get('/', async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const { rows } = await pool.query(
       `SELECT m.*, u.full_name AS uploader_name
@@ -91,9 +91,9 @@ router.delete('/:id', ...adminOrContent, async (req: Request, res: Response, nex
     const { rows } = await pool.query('SELECT * FROM media WHERE id = $1', [Number(req.params.id)]);
     if (!rows[0]) throw new AppError('Fayl topilmadi', 404);
 
-    const filename = rows[0].url.split('/').pop();
+    const filename = path.basename(rows[0].url);
     const filePath = path.join(uploadDir, filename);
-    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    if (filePath.startsWith(uploadDir) && fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
     await pool.query('DELETE FROM media WHERE id = $1', [Number(req.params.id)]);
     res.json({ success: true });

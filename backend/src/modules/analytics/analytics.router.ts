@@ -30,8 +30,8 @@ router.get('/my-stats', authenticate, async (req: Request, res: Response, next: 
       ),
       pool.query(
         `SELECT ROUND(
-           (COALESCE(AVG(cws.score),0)/5.0*0.6 +
-            LEAST(COUNT(DISTINCT q.id)::float/50.0,1.0)*0.4)*10, 1
+           ((COALESCE(AVG(cws.score),0)/5.0*0.6 +
+            LEAST(COUNT(DISTINCT q.id)::numeric/50.0,1.0)*0.4)*10)::numeric, 1
          ) AS rating
          FROM users u
          LEFT JOIN control_works cw ON cw.teacher_id = u.id
@@ -106,9 +106,11 @@ router.get('/teacher-ratings', ...allStaff, async (_req: Request, res: Response,
         COALESCE(tq.questions_count, 0) AS questions_count,
         ROUND(
           (
-            (COALESCE(ts.avg_score, 0) / 5.0) * 0.6 +
-            LEAST(COALESCE(tq.questions_count, 0)::float / 50.0, 1.0) * 0.4
-          ) * 10, 2
+            (
+              (COALESCE(ts.avg_score, 0) / 5.0) * 0.6 +
+              LEAST(COALESCE(tq.questions_count, 0)::numeric / 50.0, 1.0) * 0.4
+            ) * 10
+          )::numeric, 2
         ) AS rating,
         COALESCE(
           json_agg(s.name) FILTER (WHERE s.id IS NOT NULL), '[]'

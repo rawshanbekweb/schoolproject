@@ -49,7 +49,7 @@ router.post('/classes/seed', authenticate, authorize('super_admin'), async (_req
     for (const grade of grades) {
       const shift = grade <= 5 ? 1 : 2;
       for (const letter of letters) {
-        const name = `${grade}${letter}`;
+        const name = `${grade}-${letter}`;
         const res2 = await pool.query(
           `INSERT INTO classes (name, grade, letter, shift)
            SELECT $1,$2,$3,$4 WHERE NOT EXISTS (SELECT 1 FROM classes WHERE name = $1)`,
@@ -197,6 +197,51 @@ router.get('/weather', async (_req: Request, res: Response, next: NextFunction) 
   }
 });
 
+// POST /api/schedule — yangi yozuv (admin)
+router.post('/', authenticate, authorize('super_admin'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const body = z.object({
+      class_id:    z.coerce.number().int(),
+      subject_id:  z.coerce.number().int(),
+      teacher_id:  z.coerce.number().int().nullable().optional(),
+      day_of_week: z.coerce.number().int().min(1).max(6),
+      lesson_num:  z.coerce.number().int().min(1).max(8),
+      shift:       z.coerce.number().int().min(1).max(2).default(1),
+      room:        z.string().max(20).optional(),
+    }).parse(req.body);
+
+    // Mavjud bo'lsa o'chirish (upsert)
+    await pool.query(
+      'DELETE FROM schedule WHERE class_id=$1 AND day_of_week=$2 AND lesson_num=$3',
+      [body.class_id, body.day_of_week, body.lesson_num]
+    );
+    const { rows } = await pool.query(
+      `INSERT INTO schedule (class_id, subject_id, teacher_id, day_of_week, lesson_num, shift, room)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      [body.class_id, body.subject_id, body.teacher_id ?? null,
+       body.day_of_week, body.lesson_num, body.shift, body.room ?? null]
+    );
+    res.status(201).json({ success: true, data: rows[0] });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/schedule/:id (admin)
+router.delete('/:id', authenticate, authorize('super_admin'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { rowCount } = await pool.query('DELETE FROM schedule WHERE id=$1', [Number(req.params.id)]);
+    if (!rowCount) throw new AppError('Topilmadi', 404);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// DELETE /api/schedule/class/:class_id — sinf jadvalini tozalash (admin)
+router.delete('/class/:class_id', authenticate, authorize('super_admin'), async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await pool.query('DELETE FROM schedule WHERE class_id=$1', [Number(req.params.class_id)]);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
 // GET /api/schedule?class_id=&day=
 router.get('/', async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -222,9 +267,9 @@ router.get('/', async (req: Request, res: Response, next: NextFunction) => {
        JOIN classes c ON c.id = sch.class_id
        JOIN subjects s ON s.id = sch.subject_id
        LEFT JOIN users u ON u.id = sch.teacher_id
-       JOIN lesson_times lt ON lt.shift = sch.shift AND lt.lesson_num = sch.lesson_num
+       LEFT JOIN lesson_times lt ON lt.shift = sch.shift AND lt.lesson_num = sch.lesson_num
        ${where}
-       ORDER BY sch.day_of_week, lt.start_time`,
+       ORDER BY sch.day_of_week, sch.lesson_num`,
       params
     );
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Images, ZoomIn } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 
 interface MediaItem {
@@ -85,6 +86,7 @@ function Lightbox({ items, index, onClose }: { items: MediaItem[]; index: number
 }
 
 export default function GalleryPage() {
+  const { t } = useTranslation();
   const [album, setAlbum] = useState<string>('');
   const [lightbox, setLightbox] = useState<number | null>(null);
 
@@ -102,8 +104,8 @@ export default function GalleryPage() {
     <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Galereya</h1>
-        <p className="text-gray-500">Maktab hayotidan suratlar</p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">{t('public.gallery.title')}</h1>
+        <p className="text-gray-500">{t('public.gallery.subtitle')}</p>
       </motion.div>
 
       {/* Album filter */}
@@ -120,7 +122,7 @@ export default function GalleryPage() {
                   : 'border-gray-200 text-gray-600 hover:border-blue-300'
               }`}
             >
-              {a || 'Barchasi'}
+              {a || t('public.teachers.all')}
             </button>
           ))}
         </motion.div>
@@ -136,7 +138,7 @@ export default function GalleryPage() {
       ) : !filtered.length ? (
         <div className="text-center py-16 text-gray-400">
           <Images className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>{allMedia.length ? 'Bu albumda rasm yo\'q' : 'Rasmlar topilmadi'}</p>
+          <p>{allMedia.length ? t('public.gallery.emptyAlbum') : t('public.gallery.emptyAll')}</p>
         </div>
       ) : (
         <div className="columns-2 sm:columns-3 lg:columns-4 gap-3">

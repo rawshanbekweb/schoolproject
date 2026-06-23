@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 
 interface Props {
@@ -8,7 +9,8 @@ interface Props {
   label?: string;
 }
 
-export default function ImageUpload({ value, onChange, label = 'Rasm yuklash' }: Props) {
+export default function ImageUpload({ value, onChange, label }: Props) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
@@ -24,7 +26,7 @@ export default function ImageUpload({ value, onChange, label = 'Rasm yuklash' }:
       });
       onChange(data.data.url);
     } catch (e: any) {
-      setError(e.response?.data?.message || 'Yuklash xatosi');
+      setError(e.response?.data?.message || t('common.uploadError'));
     } finally {
       setLoading(false);
     }
@@ -38,7 +40,7 @@ export default function ImageUpload({ value, onChange, label = 'Rasm yuklash' }:
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium text-gray-700">{label}</label>
+      <label className="text-sm font-medium text-gray-700">{label ?? t('common.uploadImage')}</label>
 
       {value ? (
         <div className="relative w-full h-40 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
@@ -65,7 +67,7 @@ export default function ImageUpload({ value, onChange, label = 'Rasm yuklash' }:
               <div className="bg-gray-100 rounded-full p-3">
                 {error ? <ImageIcon className="w-6 h-6 text-red-400" /> : <Upload className="w-6 h-6 text-gray-400" />}
               </div>
-              <p className="text-sm text-gray-500">Rasm tanlash yoki shu yerga tashlang</p>
+              <p className="text-sm text-gray-500">{t('common.dragDropImage')}</p>
               <p className="text-xs text-gray-400">JPEG, PNG, WebP, GIF · max 5MB</p>
             </>
           )}
@@ -86,7 +88,7 @@ export default function ImageUpload({ value, onChange, label = 'Rasm yuklash' }:
         <div className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5">
           <input
             type="url"
-            placeholder="yoki URL kiriting..."
+            placeholder={t('common.orEnterUrl')}
             value={value ?? ''}
             onChange={(e) => onChange(e.target.value)}
             className="w-full text-sm text-gray-600 outline-none bg-transparent"

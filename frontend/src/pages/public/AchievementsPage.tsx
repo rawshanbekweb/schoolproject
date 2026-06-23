@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Trophy, Star, GraduationCap, BookOpen, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { Achievement } from '../../types';
+import { getDateLocale } from '../../i18n/dateLocale';
 
 type FilterType = '' | 'student' | 'teacher';
 
@@ -22,12 +24,13 @@ function getLevelColor(level: string | null) {
 
 function formatDate(iso: string | null) {
   if (!iso) return null;
-  return new Date(iso).toLocaleDateString('uz-UZ', {
+  return new Date(iso).toLocaleDateString(getDateLocale(), {
     day: 'numeric', month: 'long', year: 'numeric',
   });
 }
 
 function AchievementCard({ item }: { item: Achievement }) {
+  const { t } = useTranslation();
   return (
     <div className={`card hover:shadow-md transition-all duration-200 relative ${item.is_featured ? 'ring-2 ring-amber-300 ring-offset-1' : ''}`}>
       {item.is_featured && (
@@ -63,7 +66,7 @@ function AchievementCard({ item }: { item: Achievement }) {
             <h3 className="font-semibold text-gray-800 text-sm leading-tight">{item.person_name}</h3>
             <div className="flex items-center gap-1.5 shrink-0">
               <span className={`badge ${item.person_type === 'student' ? 'badge-blue' : 'badge-amber'}`}>
-                {item.person_type === 'student' ? "O'quvchi" : "O'qituvchi"}
+                {item.person_type === 'student' ? t('public.achievements.student') : t('public.achievements.teacher')}
               </span>
             </div>
           </div>
@@ -81,7 +84,7 @@ function AchievementCard({ item }: { item: Achievement }) {
               </span>
             )}
             {item.class_name && (
-              <span className="text-xs text-gray-400">{item.class_name}-sinf</span>
+              <span className="text-xs text-gray-400">{item.class_name}{t('public.achievements.gradeSuffix')}</span>
             )}
             {item.award_date && (
               <span className="text-xs text-gray-400 flex items-center gap-0.5">
@@ -97,6 +100,7 @@ function AchievementCard({ item }: { item: Achievement }) {
 }
 
 export default function AchievementsPage() {
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<FilterType>('');
   const [page, setPage] = useState(1);
 
@@ -130,19 +134,19 @@ export default function AchievementsPage() {
           <div className="bg-amber-100 p-2 rounded-xl">
             <Trophy className="w-6 h-6 text-amber-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">Maktab faxrlari</h1>
+          <h1 className="text-3xl font-bold text-gray-800">{t('public.achievements.title')}</h1>
         </div>
         <p className="text-gray-500">
-          {total > 0 ? `${total} ta yutuq va muvaffaqiyat` : "Maktabimiz o'quvchi va o'qituvchilarining yutuqlari"}
+          {total > 0 ? t('public.achievements.subtitleCount', { count: total }) : t('public.achievements.subtitleEmpty')}
         </p>
       </div>
 
       {/* Filters */}
       <div className="flex gap-2 mb-6">
         {[
-          { value: '' as FilterType, label: 'Barchasi' },
-          { value: 'student' as FilterType, label: "O'quvchilar" },
-          { value: 'teacher' as FilterType, label: "O'qituvchilar" },
+          { value: '' as FilterType, labelKey: 'public.achievements.filterAll' },
+          { value: 'student' as FilterType, labelKey: 'public.achievements.filterStudents' },
+          { value: 'teacher' as FilterType, labelKey: 'public.achievements.filterTeachers' },
         ].map(f => (
           <button
             key={f.value}
@@ -153,7 +157,7 @@ export default function AchievementsPage() {
                 : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300 hover:text-blue-700'
             }`}
           >
-            {f.label}
+            {t(f.labelKey)}
           </button>
         ))}
       </div>
@@ -176,8 +180,8 @@ export default function AchievementsPage() {
       ) : items.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <Trophy className="w-14 h-14 mb-3 opacity-30" />
-          <p className="font-medium text-gray-500">Hali yutuqlar kiritilmagan</p>
-          <p className="text-sm mt-1">Admin paneli orqali qo'shing</p>
+          <p className="font-medium text-gray-500">{t('public.achievements.empty')}</p>
+          <p className="text-sm mt-1">{t('public.achievements.emptySub')}</p>
         </div>
       ) : (
         <>
@@ -186,7 +190,7 @@ export default function AchievementsPage() {
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                <h2 className="font-semibold text-gray-700 text-sm">Eng yaxshilar</h2>
+                <h2 className="font-semibold text-gray-700 text-sm">{t('public.achievements.featured')}</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {featured.map(item => (
@@ -200,7 +204,7 @@ export default function AchievementsPage() {
           {rest.length > 0 && (
             <div>
               {page === 1 && featured.length > 0 && (
-                <h2 className="font-semibold text-gray-700 text-sm mb-3">Boshqa yutuqlar</h2>
+                <h2 className="font-semibold text-gray-700 text-sm mb-3">{t('public.achievements.others')}</h2>
               )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {rest.map(item => (

@@ -96,9 +96,17 @@ router.delete('/:id', ...teacherOrAdmin, async (req: Request, res: Response, nex
 // GET /api/control-works/:id/scores
 router.get('/:id/scores', ...teacherOrAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const cwId = Number(req.params.id);
+    const existing = await pool.query('SELECT teacher_id FROM control_works WHERE id = $1', [cwId]);
+    if (!existing.rows[0]) throw new AppError('Topilmadi', 404);
+
+    if (req.user!.role === 'teacher' && existing.rows[0].teacher_id !== req.user!.userId) {
+      throw new AppError("Bu nazorat ishi sizga tegishli emas", 403);
+    }
+
     const { rows } = await pool.query(
       `SELECT * FROM control_work_scores WHERE control_work_id = $1 ORDER BY student_name`,
-      [Number(req.params.id)]
+      [cwId]
     );
     res.json({ success: true, data: rows });
   } catch (err) { next(err); }
@@ -108,6 +116,13 @@ router.get('/:id/scores', ...teacherOrAdmin, async (req: Request, res: Response,
 router.post('/:id/scores', ...teacherOrAdmin, async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cwId = Number(req.params.id);
+    const existing = await pool.query('SELECT teacher_id FROM control_works WHERE id = $1', [cwId]);
+    if (!existing.rows[0]) throw new AppError('Topilmadi', 404);
+
+    if (req.user!.role === 'teacher' && existing.rows[0].teacher_id !== req.user!.userId) {
+      throw new AppError("Bu nazorat ishi sizga tegishli emas", 403);
+    }
+
     const body = z.object({
       scores: z.array(z.object({
         student_name: z.string().min(2).max(200),

@@ -4,8 +4,10 @@ import {
   ArrowLeft, Calendar, User, Eye,
   Newspaper, AlertCircle,
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { News, NewsCategory } from '../../types';
+import { getDateLocale } from '../../i18n/dateLocale';
 
 const CATEGORY_COLORS: Record<NewsCategory, string> = {
   news: 'badge-blue',
@@ -13,20 +15,21 @@ const CATEGORY_COLORS: Record<NewsCategory, string> = {
   announcement: 'badge-amber',
 };
 
-const CATEGORY_LABELS: Record<NewsCategory, string> = {
-  news: 'Yangilik',
-  event: 'Tadbir',
-  announcement: "E'lon",
+const CATEGORY_LABEL_KEYS: Record<NewsCategory, string> = {
+  news: 'public.news.categoryLabels.news',
+  event: 'public.news.categoryLabels.event',
+  announcement: 'public.news.categoryLabels.announcement',
 };
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('uz-UZ', {
+  return new Date(iso).toLocaleDateString(getDateLocale(), {
     day: 'numeric', month: 'long', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
 }
 
 export default function NewsDetailPage() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
 
@@ -59,11 +62,11 @@ export default function NewsDetailPage() {
         <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 rounded-full mb-4">
           <AlertCircle className="w-8 h-8 text-red-400" />
         </div>
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">Yangilik topilmadi</h2>
-        <p className="text-gray-500 text-sm mb-6">Bu sahifa mavjud emas yoki o'chirilgan bo'lishi mumkin.</p>
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">{t('public.newsDetail.notFound')}</h2>
+        <p className="text-gray-500 text-sm mb-6">{t('public.newsDetail.notFoundDesc')}</p>
         <Link to="/news" className="btn-primary inline-flex items-center gap-2">
           <ArrowLeft className="w-4 h-4" />
-          Yangiliklarga qaytish
+          {t('public.newsDetail.backToList')}
         </Link>
       </div>
     );
@@ -77,13 +80,13 @@ export default function NewsDetailPage() {
         className="flex items-center gap-2 text-sm text-gray-500 hover:text-blue-700 transition-colors mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
-        Orqaga
+        {t('public.newsDetail.back')}
       </button>
 
       {/* Category + Meta */}
       <div className="flex items-center gap-3 flex-wrap mb-4">
         <span className={`badge ${CATEGORY_COLORS[news.category]}`}>
-          {CATEGORY_LABELS[news.category]}
+          {t(CATEGORY_LABEL_KEYS[news.category])}
         </span>
         <div className="flex items-center gap-3 text-xs text-gray-400">
           {news.author && (
@@ -98,7 +101,7 @@ export default function NewsDetailPage() {
           </span>
           <span className="flex items-center gap-1">
             <Eye className="w-3 h-3" />
-            {news.views} marta ko'rildi
+            {news.views} {t('public.newsDetail.views')}
           </span>
         </div>
       </div>
@@ -143,7 +146,7 @@ export default function NewsDetailPage() {
           className="inline-flex items-center gap-2 text-sm text-blue-700 hover:text-blue-900 font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
-          Barcha yangiliklarga qaytish
+          {t('public.newsDetail.backToAll')}
         </Link>
       </div>
     </div>

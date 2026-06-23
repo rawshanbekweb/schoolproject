@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Clock, GraduationCap, Eye, Target } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, GraduationCap } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { SchoolInfo, ManagementMember } from '../../types';
 
@@ -21,6 +22,7 @@ function InfoCard({ icon: Icon, title, content }: { icon: any; title: string; co
 }
 
 export default function AboutPage() {
+  const { t } = useTranslation();
   const { data: infoList = [] } = useQuery<SchoolInfo[]>({
     queryKey: ['school-info'],
     queryFn: () => apiClient.get('/school-info').then(r => r.data.data),
@@ -37,50 +39,29 @@ export default function AboutPage() {
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-12">
       {/* Hero */}
       <motion.div {...fade} transition={{ duration: 0.5 }}
-        className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-blue-900 to-blue-700 text-white p-10 md:p-16 text-center">
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: 'repeating-linear-gradient(45deg, #fff 0, #fff 1px, transparent 0, transparent 50%)', backgroundSize: '20px 20px' }} />
+        className="relative rounded-3xl overflow-hidden text-white p-10 md:p-16 text-center min-h-[320px] flex items-center justify-center">
+        <img
+          src="/images/sh14.jpg"
+          alt={t('footer.schoolName')}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
         <div className="relative">
-          <div className="bg-white/10 rounded-2xl p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
             <GraduationCap className="w-10 h-10 text-white" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold mb-2">Shomanay 14-Maktab</h1>
-          <p className="text-blue-200">Qoraqalpog'iston Respublikasi, Shomanay tumani</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2 drop-shadow-md">{t('footer.schoolName')}</h1>
+          <p className="text-gray-100 drop-shadow-md">{t('public.about.subtitle')}</p>
           {info('founded') && (
-            <p className="text-blue-300 text-sm mt-3">Tashkil etilgan: {info('founded')?.content}</p>
+            <p className="text-gray-200 text-sm mt-3 drop-shadow-md">{t('public.about.founded', { val: info('founded')?.content })}</p>
           )}
         </div>
       </motion.div>
 
-      {/* Missiya va Maqsad */}
-      <motion.section {...fade} transition={{ delay: 0.1 }}>
-        <h2 className="text-xl font-bold text-gray-800 mb-5">Missiya va Maqsad</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="card border-l-4 border-blue-600">
-            <div className="flex items-center gap-2 mb-3">
-              <Eye className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-gray-800">{info('mission')?.title || 'Missiyamiz'}</h3>
-            </div>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              {info('mission')?.content || 'Yuklanmoqda...'}
-            </p>
-          </div>
-          <div className="card border-l-4 border-green-600">
-            <div className="flex items-center gap-2 mb-3">
-              <Target className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-gray-800">{info('vision')?.title || 'Maqsadimiz'}</h3>
-            </div>
-            <p className="text-gray-600 text-sm leading-relaxed">
-              {info('vision')?.content || 'Yuklanmoqda...'}
-            </p>
-          </div>
-        </div>
-      </motion.section>
-
       {/* Tarix */}
       {info('history') && (
         <motion.section {...fade} transition={{ delay: 0.2 }}>
-          <h2 className="text-xl font-bold text-gray-800 mb-4">{info('history')?.title || 'Maktab tarixi'}</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">{info('history')?.title || t('public.about.historyTitle')}</h2>
           <div className="card">
             <p className="text-gray-600 leading-relaxed">{info('history')?.content}</p>
           </div>
@@ -89,7 +70,7 @@ export default function AboutPage() {
 
       {/* Rahbariyat */}
       <motion.section {...fade} transition={{ delay: 0.3 }}>
-        <h2 className="text-xl font-bold text-gray-800 mb-5">Rahbariyat</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-5">{t('public.about.management')}</h2>
         {mLoad ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, i) => <div key={i} className="card h-40 animate-pulse" />)}
@@ -116,12 +97,12 @@ export default function AboutPage() {
 
       {/* Bog'lanish */}
       <motion.section {...fade} transition={{ delay: 0.4 }}>
-        <h2 className="text-xl font-bold text-gray-800 mb-5">Manzil va bog'lanish</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-5">{t('public.about.contactSection')}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <InfoCard icon={MapPin}  title="Manzil"    content={info('address')?.content ?? undefined} />
-          <InfoCard icon={Phone}   title="Telefon"   content={info('phone')?.content ?? undefined} />
-          <InfoCard icon={Mail}    title="Email"     content={info('email')?.content ?? undefined} />
-          <InfoCard icon={Clock}   title="Ish vaqti" content={info('work_hours')?.content ?? undefined} />
+          <InfoCard icon={MapPin}  title={t('public.about.address')}   content={info('address')?.content ?? undefined} />
+          <InfoCard icon={Phone}   title={t('public.about.phone')}     content={info('phone')?.content ?? undefined} />
+          <InfoCard icon={Mail}    title={t('public.about.email')}     content={info('email')?.content ?? undefined} />
+          <InfoCard icon={Clock}   title={t('public.about.workHours')} content={info('work_hours')?.content ?? undefined} />
         </div>
       </motion.section>
     </div>

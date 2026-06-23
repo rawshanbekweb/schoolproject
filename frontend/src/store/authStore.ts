@@ -8,6 +8,7 @@ interface AuthStore {
   isAuthenticated: boolean;
 
   setAuth: (user: User, token: string) => void;
+  setUser: (user: User) => void;
   logout: () => void;
   hasRole: (...roles: UserRole[]) => boolean;
 }
@@ -23,6 +24,8 @@ export const useAuthStore = create<AuthStore>()(
         localStorage.setItem('accessToken', accessToken);
         set({ user, accessToken, isAuthenticated: true });
       },
+
+      setUser: (user) => set({ user }),
 
       logout: () => {
         localStorage.removeItem('accessToken');

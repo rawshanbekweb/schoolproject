@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useAuthStore } from '../store/authStore';
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -16,7 +17,6 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor — 401 bo'lsa refresh qilish
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -35,8 +35,10 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return apiClient(originalRequest);
       } catch {
-        localStorage.removeItem('accessToken');
-        window.location.href = '/login';
+        useAuthStore.getState().logout();
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
     }
 

@@ -2,14 +2,16 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Eye, Calendar, User, Newspaper, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { News, NewsCategory } from '../../types';
+import { getDateLocale } from '../../i18n/dateLocale';
 
-const CATEGORIES: { value: NewsCategory | ''; label: string }[] = [
-  { value: '', label: 'Barchasi' },
-  { value: 'news', label: 'Yangiliklar' },
-  { value: 'event', label: 'Tadbirlar' },
-  { value: 'announcement', label: "E'lonlar" },
+const CATEGORIES: { value: NewsCategory | ''; labelKey: string }[] = [
+  { value: '', labelKey: 'public.news.categories.all' },
+  { value: 'news', labelKey: 'public.news.categories.news' },
+  { value: 'event', labelKey: 'public.news.categories.event' },
+  { value: 'announcement', labelKey: 'public.news.categories.announcement' },
 ];
 
 const CATEGORY_COLORS: Record<NewsCategory, string> = {
@@ -18,19 +20,20 @@ const CATEGORY_COLORS: Record<NewsCategory, string> = {
   announcement: 'badge-amber',
 };
 
-const CATEGORY_LABELS: Record<NewsCategory, string> = {
-  news: 'Yangilik',
-  event: 'Tadbir',
-  announcement: "E'lon",
+const CATEGORY_LABEL_KEYS: Record<NewsCategory, string> = {
+  news: 'public.news.categoryLabels.news',
+  event: 'public.news.categoryLabels.event',
+  announcement: 'public.news.categoryLabels.announcement',
 };
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('uz-UZ', {
+  return new Date(iso).toLocaleDateString(getDateLocale(), {
     day: 'numeric', month: 'long', year: 'numeric',
   });
 }
 
 function NewsCard({ item }: { item: News }) {
+  const { t } = useTranslation();
   return (
     <Link
       to={`/news/${item.slug}`}
@@ -50,7 +53,7 @@ function NewsCard({ item }: { item: News }) {
           </div>
         )}
         <span className={`absolute top-3 left-3 badge ${CATEGORY_COLORS[item.category]}`}>
-          {CATEGORY_LABELS[item.category]}
+          {t(CATEGORY_LABEL_KEYS[item.category])}
         </span>
       </div>
 
@@ -83,6 +86,7 @@ function NewsCard({ item }: { item: News }) {
 }
 
 export default function NewsPage() {
+  const { t } = useTranslation();
   const [category, setCategory] = useState<NewsCategory | ''>('');
   const [page, setPage] = useState(1);
 
@@ -108,8 +112,8 @@ export default function NewsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Yangiliklar</h1>
-        <p className="text-gray-500 mt-1">Maktab hayotidan so'nggi xabarlar</p>
+        <h1 className="text-3xl font-bold text-gray-800">{t('public.news.title')}</h1>
+        <p className="text-gray-500 mt-1">{t('public.news.subtitle')}</p>
       </div>
 
       {/* Category tabs */}
@@ -124,7 +128,7 @@ export default function NewsPage() {
                 : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-300 hover:text-blue-700'
             }`}
           >
-            {cat.label}
+            {t(cat.labelKey)}
           </button>
         ))}
       </div>
@@ -146,8 +150,8 @@ export default function NewsPage() {
       ) : news.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <Newspaper className="w-14 h-14 mb-3 opacity-30" />
-          <p className="font-medium text-gray-500">Yangiliklar hali yo'q</p>
-          <p className="text-sm mt-1">Tez orada qo'shiladi</p>
+          <p className="font-medium text-gray-500">{t('public.news.empty')}</p>
+          <p className="text-sm mt-1">{t('public.news.emptySub')}</p>
         </div>
       ) : (
         <>

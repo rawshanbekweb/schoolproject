@@ -31,7 +31,16 @@ export const errorHandler = (
     res.status(400).json({
       success: false,
       message: 'Validatsiya xatosi',
-      errors: JSON.parse(err.message),
+      errors: (err as any).errors || err.message,
+    });
+    return;
+  }
+
+  // JWT token xatoligi (yaroqsiz yoki muddati tugagan)
+  if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
+    res.status(401).json({
+      success: false,
+      message: 'Token yaroqsiz yoki muddati tugagan',
     });
     return;
   }
@@ -45,7 +54,11 @@ export const errorHandler = (
     return;
   }
 
-  console.error('❌ Server xatosi:', err);
+  if (process.env.NODE_ENV === 'production') {
+    console.error('❌ Server xatosi:', err.message);
+  } else {
+    console.error('❌ Server xatosi:', err);
+  }
   res.status(500).json({
     success: false,
     message: 'Server xatosi yuz berdi',

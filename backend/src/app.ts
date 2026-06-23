@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -19,6 +21,7 @@ import controlWorksRouter from './modules/control-works/control-works.router';
 import mediaRouter from './modules/media/media.router';
 import subjectsRouter from './modules/subjects/subjects.router';
 import testConfigsRouter from './modules/test-configs/test-configs.router';
+import blockTestsRouter from './modules/block-tests/block-tests.router';
 import extraRouter from './modules/extra/extra.router';
 
 dotenv.config();
@@ -27,6 +30,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ===== MIDDLEWARE =====
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
@@ -37,6 +43,29 @@ app.use(cookieParser());
 
 // Statik fayllar (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.use('/uploads/exams', express.static(path.join(__dirname, '..', 'uploads', 'exams')));
+
+// Login bruteforce himoyasi
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 daqiqa
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Juda ko\'p urinish. Birozdan keyin qayta urinib ko\'ring' },
+});
+app.use('/api/auth/login', authLimiter);
+
+// Umumiy API himoyasi (brute-force/DoS) — faqat production'da,
+// development'da StrictMode/HMR tufayli so'rovlar soni sun'iy ravishda oshib ketadi
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 daqiqa
+  limit: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV !== 'production',
+  message: { success: false, message: 'Juda ko\'p so\'rov. Birozdan keyin qayta urinib ko\'ring' },
+});
+app.use('/api', apiLimiter);
 
 // ===== ROUTES =====
 app.use('/api/auth', authRouter);
@@ -50,6 +79,7 @@ app.use('/api/control-works', controlWorksRouter);
 app.use('/api/media', mediaRouter);
 app.use('/api/subjects', subjectsRouter);
 app.use('/api/test-configs', testConfigsRouter);
+app.use('/api/block-tests', blockTestsRouter);
 app.use('/api', extraRouter); // school-info, contacts, documents, teachers, classes
 
 // Health check

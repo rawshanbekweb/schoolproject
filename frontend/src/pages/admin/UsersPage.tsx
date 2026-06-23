@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Plus, Pencil, Trash2, X, Loader2, Search,
-  Users, ShieldCheck, BookOpen, UserCheck, UserX, Key,
+  Users, ShieldCheck, BookOpen, UserCheck, UserX, Key, Camera,
 } from 'lucide-react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
 import { User, Subject } from '../../types';
 
@@ -15,10 +16,10 @@ interface UserWithSubjects extends User {
   subjects: { id: number; name: string }[];
 }
 
-const ROLE_LABELS: Record<string, string> = {
-  super_admin: 'Super Admin',
-  content_manager: 'Content Manager',
-  teacher: "O'qituvchi",
+const ROLE_LABEL_KEYS: Record<string, string> = {
+  super_admin: 'dashboard.roleSuperAdmin',
+  content_manager: 'dashboard.roleContentManager',
+  teacher: 'dashboard.roleTeacher',
 };
 const ROLE_COLORS: Record<string, string> = {
   super_admin: 'badge-red',
@@ -28,11 +29,12 @@ const ROLE_COLORS: Record<string, string> = {
 
 // ── Schemas ──
 const createSchema = z.object({
-  login: z.string().min(3, 'Kamida 3 belgi').max(100),
-  password: z.string().min(6, 'Kamida 6 belgi'),
-  full_name: z.string().min(2, 'Kamida 2 belgi').max(200),
+  login: z.string().min(3, 'admin.users.validation.loginMin').max(100),
+  password: z.string().min(6, 'admin.users.validation.passwordMin'),
+  full_name: z.string().min(2, 'admin.users.validation.fullNameMin').max(200),
   role: z.enum(['super_admin', 'content_manager', 'teacher']),
   phone: z.string().optional(),
+  photo_url: z.string().optional(),
   subject_ids: z.array(z.number()).optional(),
 });
 const editSchema = createSchema.omit({ password: true }).extend({
@@ -51,8 +53,12 @@ function UserModal({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { t } = useTranslation();
   const isEdit = !!user;
   const schema = isEdit ? editSchema : createSchema;
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [photoUrl, setPhotoUrl] = useState<string>(user?.photo_url ?? '');
+  const [photoLoading, setPhotoLoading] = useState(false);
 
   const { register, handleSubmit, watch, control, formState: { errors, isSubmitting } } = useForm<any>({
     resolver: zodResolver(schema),
@@ -63,16 +69,35 @@ function UserModal({
           role: user!.role,
           phone: user!.phone ?? '',
           password: '',
+          photo_url: user!.photo_url ?? '',
           subject_ids: user!.subjects?.map(s => s.id) ?? [],
         }
-      : { role: 'teacher', subject_ids: [] },
+      : { role: 'teacher', subject_ids: [], photo_url: '' },
   });
 
   const role = watch('role');
-  const selectedSubjects: number[] = watch('subject_ids') ?? [];
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoLoading(true);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await apiClient.post('/media/upload', form, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const url: string = res.data.data.url;
+      setPhotoUrl(url);
+    } catch {
+      alert(t('admin.users.photoUploadFailed'));
+    } finally {
+      setPhotoLoading(false);
+    }
+  };
 
   const onSubmit = async (data: any) => {
-    const payload = { ...data };
+    const payload = { ...data, photo_url: photoUrl || undefined };
     if (isEdit && !payload.password) delete payload.password;
     if (payload.role !== 'teacher') payload.subject_ids = [];
 
@@ -94,7 +119,7 @@ function UserModal({
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <h2 className="font-semibold text-gray-800">
-            {isEdit ? 'Foydalanuvchini tahrirlash' : 'Yangi foydalanuvchi'}
+            {isEdit ? t('admin.users.editTitle') : t('admin.users.createTitle')}
           </h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100">
             <X className="w-5 h-5 text-gray-500" />
@@ -102,16 +127,41 @@ function UserModal({
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-5 space-y-4">
+          {/* Photo */}
+          <div className="flex items-center gap-4">
+            <div className="relative shrink-0">
+              {photoUrl ? (
+                <img src={photoUrl} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-blue-100" />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-xl">
+                  {watch('full_name')?.charAt(0) || '?'}
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="absolute -bottom-1 -right-1 bg-blue-600 text-white rounded-full p-1 hover:bg-blue-700 transition-colors"
+              >
+                {photoLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Camera className="w-3 h-3" />}
+              </button>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-gray-700">{t('admin.users.photoLabel')}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{t('admin.users.photoHint')}</p>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Ism familiya <span className="text-red-500">*</span>
+                {t('admin.users.fullNameLabel')} <span className="text-red-500">*</span>
               </label>
-              <input className="input" {...register('full_name')} placeholder="Alisher Toshmatov" />
-              {errors.full_name && <p className="text-red-500 text-xs mt-1">{String(errors.full_name.message)}</p>}
+              <input className="input" {...register('full_name')} placeholder={t('admin.users.fullNamePlaceholder')} />
+              {errors.full_name && <p className="text-red-500 text-xs mt-1">{t(String(errors.full_name.message))}</p>}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Telefon</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">{t('admin.users.phoneLabel')}</label>
               <input className="input" {...register('phone')} placeholder="+998 90 000 00 00" />
             </div>
           </div>
@@ -119,27 +169,27 @@ function UserModal({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Login <span className="text-red-500">*</span>
+                {t('admin.users.loginLabel')} <span className="text-red-500">*</span>
               </label>
-              <input className="input" {...register('login')} placeholder="login123" disabled={isEdit} />
-              {errors.login && <p className="text-red-500 text-xs mt-1">{String(errors.login.message)}</p>}
+              <input className="input" {...register('login')} placeholder={t('admin.users.loginPlaceholder')} disabled={isEdit} />
+              {errors.login && <p className="text-red-500 text-xs mt-1">{t(String(errors.login.message))}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Parol {isEdit && <span className="text-gray-400 font-normal">(o'zgartirmaslik uchun bo'sh)</span>}
+                {t('admin.users.passwordLabel')} {isEdit && <span className="text-gray-400 font-normal">{t('admin.users.passwordKeepHint')}</span>}
                 {!isEdit && <span className="text-red-500"> *</span>}
               </label>
               <div className="relative">
                 <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-                <input className="input pl-8" type="password" {...register('password')} placeholder="••••••" />
+                <input className="input pl-8" type="password" {...register('password')} placeholder={t('admin.users.passwordPlaceholder')} />
               </div>
-              {errors.password && <p className="text-red-500 text-xs mt-1">{String(errors.password.message)}</p>}
+              {errors.password && <p className="text-red-500 text-xs mt-1">{t(String(errors.password.message))}</p>}
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
-              Rol <span className="text-red-500">*</span>
+              {t('admin.users.roleLabel')} <span className="text-red-500">*</span>
             </label>
             <div className="grid grid-cols-3 gap-2">
               {(['teacher', 'content_manager', 'super_admin'] as const).map(r => (
@@ -147,7 +197,7 @@ function UserModal({
                   role === r ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
                 }`}>
                   <input type="radio" value={r} {...register('role')} className="sr-only" />
-                  <span className="text-xs font-medium text-gray-700">{ROLE_LABELS[r]}</span>
+                  <span className="text-xs font-medium text-gray-700">{t(ROLE_LABEL_KEYS[r])}</span>
                 </label>
               ))}
             </div>
@@ -155,7 +205,7 @@ function UserModal({
 
           {role === 'teacher' && subjects.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Biriktirilgan fanlar</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('admin.users.assignedSubjects')}</label>
               <Controller
                 name="subject_ids"
                 control={control}
@@ -185,9 +235,9 @@ function UserModal({
           )}
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="btn-outline flex-1">Bekor</button>
+            <button type="button" onClick={onClose} className="btn-outline flex-1">{t('common.cancel')}</button>
             <button type="submit" className="btn-primary flex-1 flex items-center justify-center gap-2" disabled={isSubmitting}>
-              {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" />Saqlanmoqda...</> : 'Saqlash'}
+              {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" />{t('common.saving')}</> : t('common.save')}
             </button>
           </div>
         </form>
@@ -200,6 +250,7 @@ function UserModal({
 function DeleteConfirm({ userId, name, onClose, onDone }: {
   userId: number; name: string; onClose: () => void; onDone: () => void;
 }) {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
@@ -207,10 +258,10 @@ function DeleteConfirm({ userId, name, onClose, onDone }: {
         <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <Trash2 className="w-6 h-6 text-red-600" />
         </div>
-        <h3 className="font-semibold text-gray-800 mb-1">O'chirasizmi?</h3>
-        <p className="text-sm text-gray-500 mb-5"><strong>{name}</strong> o'chiriladi</p>
+        <h3 className="font-semibold text-gray-800 mb-1">{t('admin.users.confirmDeleteTitle')}</h3>
+        <p className="text-sm text-gray-500 mb-5"><strong>{name}</strong> {t('admin.users.confirmDeleteDesc')}</p>
         <div className="flex gap-3">
-          <button className="btn-outline flex-1" onClick={onClose}>Bekor</button>
+          <button className="btn-outline flex-1" onClick={onClose}>{t('common.cancel')}</button>
           <button
             className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
             disabled={loading}
@@ -222,7 +273,7 @@ function DeleteConfirm({ userId, name, onClose, onDone }: {
             }}
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-            O'chirish
+            {t('common.delete')}
           </button>
         </div>
       </div>
@@ -232,6 +283,7 @@ function DeleteConfirm({ userId, name, onClose, onDone }: {
 
 // ── Main ──
 export default function UsersPage() {
+  const { t } = useTranslation();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
@@ -274,21 +326,21 @@ export default function UsersPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Foydalanuvchilar</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{users.length} ta foydalanuvchi</p>
+          <h1 className="text-2xl font-bold text-gray-800">{t('admin.users.title')}</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{t('admin.users.countSuffix', { count: users.length })}</p>
         </div>
         <button className="btn-primary flex items-center gap-2" onClick={() => setModalUser(null)}>
-          <Plus className="w-4 h-4" /> Yangi foydalanuvchi
+          <Plus className="w-4 h-4" /> {t('admin.users.newUser')}
         </button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
-          { label: 'Jami', value: counts.all, icon: Users, color: 'bg-gray-50 text-gray-700' },
-          { label: "O'qituvchilar", value: counts.teacher, icon: BookOpen, color: 'bg-blue-50 text-blue-700' },
-          { label: 'Content Manager', value: counts.content_manager, icon: ShieldCheck, color: 'bg-amber-50 text-amber-700' },
-          { label: 'Super Admin', value: counts.super_admin, icon: ShieldCheck, color: 'bg-red-50 text-red-700' },
+          { label: t('admin.users.statTotal'), value: counts.all, icon: Users, color: 'bg-gray-50 text-gray-700' },
+          { label: t('admin.users.statTeachers'), value: counts.teacher, icon: BookOpen, color: 'bg-blue-50 text-blue-700' },
+          { label: t('dashboard.roleContentManager'), value: counts.content_manager, icon: ShieldCheck, color: 'bg-amber-50 text-amber-700' },
+          { label: t('dashboard.roleSuperAdmin'), value: counts.super_admin, icon: ShieldCheck, color: 'bg-red-50 text-red-700' },
         ].map(s => {
           const Icon = s.icon;
           return (
@@ -309,15 +361,15 @@ export default function UsersPage() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input className="input pl-9" placeholder="Ism yoki login bo'yicha qidirish..."
+          <input className="input pl-9" placeholder={t('admin.users.searchPlaceholder')}
             value={search} onChange={e => setSearch(e.target.value)} />
         </div>
         <div className="flex gap-1.5 bg-gray-100 p-1 rounded-xl">
           {[
-            { value: '', label: 'Barchasi' },
-            { value: 'teacher', label: "O'qituvchi" },
-            { value: 'content_manager', label: 'CM' },
-            { value: 'super_admin', label: 'Admin' },
+            { value: '', label: t('common.all') },
+            { value: 'teacher', label: t('dashboard.roleTeacher') },
+            { value: 'content_manager', label: t('admin.users.filterCM') },
+            { value: 'super_admin', label: t('admin.users.filterAdmin') },
           ].map(f => (
             <button key={f.value} onClick={() => setRoleFilter(f.value)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
@@ -339,19 +391,19 @@ export default function UsersPage() {
       ) : filtered.length === 0 ? (
         <div className="card flex flex-col items-center py-14 text-gray-400">
           <Users className="w-12 h-12 mb-3 opacity-30" />
-          <p className="text-gray-500">Hech narsa topilmadi</p>
+          <p className="text-gray-500">{t('admin.users.noResults')}</p>
         </div>
       ) : (
         <div className="card overflow-hidden p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3">Foydalanuvchi</th>
-                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3 hidden sm:table-cell">Login</th>
-                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3">Rol</th>
-                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3 hidden md:table-cell">Fanlar</th>
-                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3">Holat</th>
-                <th className="text-right text-xs font-semibold text-gray-500 px-4 py-3">Amallar</th>
+                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3">{t('admin.users.tableUser')}</th>
+                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3 hidden sm:table-cell">{t('admin.users.tableLogin')}</th>
+                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3">{t('admin.users.tableRole')}</th>
+                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3 hidden md:table-cell">{t('admin.users.tableSubjects')}</th>
+                <th className="text-left text-xs font-semibold text-gray-500 px-4 py-3">{t('admin.users.tableStatus')}</th>
+                <th className="text-right text-xs font-semibold text-gray-500 px-4 py-3">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -359,9 +411,13 @@ export default function UsersPage() {
                 <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                        <span className="text-blue-700 text-xs font-bold">{u.full_name.charAt(0)}</span>
-                      </div>
+                      {u.photo_url ? (
+                        <img src={u.photo_url} alt="" className="w-8 h-8 rounded-full object-cover shrink-0 border border-gray-200" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                          <span className="text-blue-700 text-xs font-bold">{u.full_name.charAt(0)}</span>
+                        </div>
+                      )}
                       <div>
                         <p className="font-medium text-gray-800 text-sm">{u.full_name}</p>
                         <p className="text-xs text-gray-400 sm:hidden">{u.login}</p>
@@ -372,7 +428,7 @@ export default function UsersPage() {
                     <span className="text-gray-500 font-mono text-xs">{u.login}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`badge ${ROLE_COLORS[u.role]}`}>{ROLE_LABELS[u.role]}</span>
+                    <span className={`badge ${ROLE_COLORS[u.role]}`}>{t(ROLE_LABEL_KEYS[u.role])}</span>
                   </td>
                   <td className="px-4 py-3 hidden md:table-cell">
                     {u.subjects?.length ? (
@@ -393,7 +449,7 @@ export default function UsersPage() {
                           : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
                       }`}
                     >
-                      {u.is_active ? <><UserCheck className="w-3 h-3" />Faol</> : <><UserX className="w-3 h-3" />Nofaol</>}
+                      {u.is_active ? <><UserCheck className="w-3 h-3" />{t('common.active')}</> : <><UserX className="w-3 h-3" />{t('admin.users.statusInactive')}</>}
                     </button>
                   </td>
                   <td className="px-4 py-3">
