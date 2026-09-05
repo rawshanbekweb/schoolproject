@@ -1,0 +1,43 @@
+databases:
+  - name: maktab-db
+    plan: free
+    databaseName: maktab_db
+    user: maktab
+
+services:
+  - type: web
+    name: maktab-backend
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: maktab-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 7d
+      - key: SUPERADMIN_LOGIN
+        value: admin
+      - key: SUPERADMIN_PASSWORD
+        sync: false
+      - key: SUPERADMIN_FULL_NAME
+        value: Bosh Administrator
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: OPENWEATHER_LAT
+        value: "41.9579"
+      - key: OPENWEATHER_LON
+        value: "60.3592"
+      - key: CLIENT_URL
+        sync: false
