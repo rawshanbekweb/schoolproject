@@ -83,6 +83,8 @@
       "dashboard": "Dashboard",
       "users": "Foydalanuvchilar",
       "subjects": "Fanlar",
+      "otmMajors": "OTM yo'nalishlari",
+      "otmCalibration": "Natijalar va kalibratsiya",
       "schedule": "Dars jadvali",
       "news": "Yangiliklar",
       "achievements": "Maktab faxrlari",
@@ -152,8 +154,17 @@
     "news": {
       "title": "Yangiliklar",
       "subtitle": "Maktab hayotidan so'nggi xabarlar",
-      "categories": { "all": "Barchasi", "news": "Yangiliklar", "event": "Tadbirlar", "announcement": "E'lonlar" },
-      "categoryLabels": { "news": "Yangilik", "event": "Tadbir", "announcement": "E'lon" },
+      "categories": {
+        "all": "Barchasi",
+        "news": "Yangiliklar",
+        "event": "Tadbirlar",
+        "announcement": "E'lonlar"
+      },
+      "categoryLabels": {
+        "news": "Yangilik",
+        "event": "Tadbir",
+        "announcement": "E'lon"
+      },
       "empty": "Yangiliklar hali yo'q",
       "emptySub": "Tez orada qo'shiladi"
     },
@@ -321,12 +332,30 @@
       "perQuestion": "har savol {{points}} ball",
       "sectionAnswered": "{{count}}/{{total}} ta javob berildi",
       "scoreFraction": "{{score}}/{{max}} ball",
-      "sectionScore": "{{score}} ball"
+      "sectionScore": "{{score}} ball",
+      "otmTitle": "OTM tavsiyasi",
+      "otmLoading": "Tavsiyalar hisoblanmoqda...",
+      "otmEmpty": "Hozircha bu test fanlariga mos yo'nalish topilmadi",
+      "otmMatch": "Moslik: {{pct}}%",
+      "otmCutoff": "O'tish balli o'rtachasi: {{pct}}%",
+      "otmCategory": {
+        "yuqori_ehtimol": "Yuqori ehtimol",
+        "chegara_oldi": "Chegara oldi",
+        "past_ehtimol": "Past ehtimol"
+      },
+      "otmCalibrated": "Kalibratsiya qilingan hisob-kitob"
     },
     "schedule": {
       "title": "Dars jadvali",
       "subtitle": "Haftalik dars jadvali va vaqtlar",
-      "days": ["Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"],
+      "days": [
+        "Dushanba",
+        "Seshanba",
+        "Chorshanba",
+        "Payshanba",
+        "Juma",
+        "Shanba"
+      ],
       "selectPlaceholder": "Sinf tanlang...",
       "gradeGroup": "{{grade}}-sinflar",
       "classOption": "{{name}} ({{shift}}-smena, {{count}} o'quvchi)",
@@ -424,6 +453,62 @@
       "teacherCountSuffix": "ta o'qituvchi",
       "deleteTitle": "Fanni o'chirish",
       "deleteDesc": "fanini o'chirasizmi? Bu amal qaytarib bo'lmaydi."
+    },
+    "otmMajors": {
+      "title": "OTM yo'nalishlari",
+      "subtitle": "Yo'nalish, kerakli fanlar va so'nggi yillardagi o'tish ballarini boshqarish",
+      "countSuffix": "{{count}} ta yo'nalish",
+      "newMajor": "Yangi yo'nalish",
+      "createTitle": "Yangi yo'nalish",
+      "editTitle": "Yo'nalishni tahrirlash",
+      "universityLabel": "OTM nomi *",
+      "universityPlaceholder": "masalan: TATU",
+      "majorNameLabel": "Yo'nalish nomi *",
+      "majorNamePlaceholder": "masalan: Dasturiy injiniring",
+      "add": "Qo'shish",
+      "genericError": "Xatolik",
+      "empty": "Yo'nalish topilmadi",
+      "addFirst": "Birinchi yo'nalishni qo'shish",
+      "subjectsSectionTitle": "Kerakli fanlar",
+      "noSubjects": "Fan biriktirilmagan",
+      "selectSubject": "Fan tanlang",
+      "weightLabel": "Og'irlik",
+      "cutoffsSectionTitle": "Yillik o'tish ballari",
+      "noCutoffs": "Ball kiritilmagan",
+      "yearLabel": "Yil",
+      "cutoffScoreLabel": "O'tish balli",
+      "maxScoreLabel": "Maksimal ball",
+      "deleteTitle": "Yo'nalishni o'chirish",
+      "deleteDesc": "yo'nalishini o'chirasizmi? Bu amal qaytarib bo'lmaydi."
+    },
+    "otmCalibration": {
+      "title": "Natijalar va kalibratsiya",
+      "subtitle": "Bitiruvchilarning haqiqiy DTM natijalarini kiritib, tavsiya mexanizmini kalibratsiya qilish",
+      "statusTitle": "Joriy kalibratsiya",
+      "statusActive": "Faol: har 1% ichki foizga {{slope}}x, siljish {{intercept}}",
+      "statusInactive": "Kalibratsiya hali faol emas — {{count}}/{{min}} natija yig'ilgan",
+      "recalibrate": "Qayta kalibratsiya qilish",
+      "recalibrateError": "Kalibratsiya amalga oshmadi",
+      "newReport": "Yangi natija qo'shish",
+      "studentNameLabel": "O'quvchi ismi",
+      "classLabel": "Sinf",
+      "graduationYearLabel": "Bitirgan yili",
+      "majorLabel": "Baholangan yo'nalish",
+      "internalPctLabel": "Ichki test foizi (%)",
+      "realScoreLabel": "Real DTM balli",
+      "realMaxScoreLabel": "DTM maksimal balli",
+      "admittedLabel": "Kirdi",
+      "notesLabel": "Izoh",
+      "add": "Qo'shish",
+      "genericError": "Xatolik",
+      "empty": "Hali natija kiritilmagan",
+      "deleteTitle": "Natijani o'chirish",
+      "deleteDesc": "natijasini o'chirasizmi?",
+      "tableStudent": "O'quvchi",
+      "tableMajor": "Yo'nalish",
+      "tableInternal": "Ichki %",
+      "tableReal": "Real ball",
+      "tableAdmitted": "Kirdi"
     },
     "news": {
       "title": "Yangiliklar boshqaruvi",
@@ -726,6 +811,27 @@
       "closedStatus": "Yopiq",
       "confirmDeleteTitle": "Blok testni o'chirasizmi?",
       "confirmDeleteDesc": "Barcha bo'lim va natijalar ham o'chadi."
+    }
+  },
+  "chat": {
+    "title": "Maktab yordamchisi",
+    "subtitle": "Maktab haqidagi savollarga javob beraman",
+    "open": "Yordamchini ochish",
+    "close": "Yopish",
+    "reset": "Suhbatni tozalash",
+    "send": "Yuborish",
+    "placeholder": "Savolingizni yozing...",
+    "emptyState": "Salom! Maktab haqida nimani bilmoqchisiz?",
+    "sources": "Manbalar:",
+    "disclaimer": "Javoblar maktab sayti ma’lumotlariga asoslanadi",
+    "errorRateLimit": "Juda ko‘p savol yubordingiz. Biroz kutib, qayta urinib ko‘ring.",
+    "errorUnavailable": "Yordamchi hozircha ishlamayapti. Birozdan keyin urinib ko‘ring.",
+    "errorGeneric": "Xatolik yuz berdi. Qayta urinib ko‘ring.",
+    "suggestions": {
+      "s1": "Maktabga qabul qanday amalga oshiriladi?",
+      "s2": "Dars jadvali qanday?",
+      "s3": "Maktab qachon tashkil etilgan?",
+      "s4": "Qanday hujjatlar kerak?"
     }
   }
 }

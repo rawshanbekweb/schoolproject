@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/authStore';
 import PageLoader from '../ui/PageLoader';
+import ChatWidget from '../chat/ChatWidget';
 import { LANG_STORAGE_KEY, SUPPORTED_LANGS } from '../../i18n/config';
 import { apiClient } from '../../api/client';
 import { SchoolInfo } from '../../types';
@@ -326,6 +327,8 @@ export default function PublicLayout() {
           <Outlet />
         </Suspense>
       </main>
+
+      <ChatWidget />
 
       {/* Footer — oq fon asosiy, ko'k/oltin faqat urg'u sifatida ishlatiladi */}
       <footer className="relative overflow-hidden bg-white text-gray-500 pt-14 pb-10 mt-16 border-t border-gray-100">

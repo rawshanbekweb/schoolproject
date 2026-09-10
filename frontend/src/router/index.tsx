@@ -33,6 +33,8 @@ const NewsManagePage = lazy(() => import('../pages/admin/NewsManagePage'));
 const AchievementsManagePage = lazy(() => import('../pages/admin/AchievementsManagePage'));
 const AnalyticsPage = lazy(() => import('../pages/admin/AnalyticsPage'));
 const SubjectsManagePage = lazy(() => import('../pages/admin/SubjectsManagePage'));
+const OtmMajorsPage = lazy(() => import('../pages/admin/OtmMajorsPage'));
+const OtmCalibrationPage = lazy(() => import('../pages/admin/OtmCalibrationPage'));
 const SchoolInfoManagePage = lazy(() => import('../pages/admin/SchoolInfoManagePage'));
 const ScheduleManagePage = lazy(() => import('../pages/admin/ScheduleManagePage'));
 
@@ -98,6 +100,8 @@ export const router = createBrowserRouter([
           { path: 'news',          element: <NewsManagePage /> },
           { path: 'achievements',  element: <AchievementsManagePage /> },
           { path: 'subjects',      element: <SubjectsManagePage /> },
+          { path: 'otm-majors',    element: <OtmMajorsPage /> },
+          { path: 'otm-calibration', element: <OtmCalibrationPage /> },
           { path: 'school-info',   element: <SchoolInfoManagePage /> },
           { path: 'schedule',      element: <ScheduleManagePage /> },
           { path: 'analytics',     element: <AnalyticsPage /> },

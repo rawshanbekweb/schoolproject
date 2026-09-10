@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { pool } from '../../config/db';
 import { authenticate, authorize } from '../../middleware/auth';
 import { AppError } from '../../middleware/errorHandler';
+import { getCurrentLesson } from './schedule.service';
 
 const router = Router();
 
@@ -72,93 +73,12 @@ router.delete('/classes/:id', authenticate, authorize('super_admin'), async (req
 });
 
 // GET /api/schedule/current — Smart Shift Widget uchun
-// Hozirgi vaqtga qarab qaysi dars o'tilayotganini qaytaradi
+// Hozirgi vaqtga qarab qaysi dars o'tilayotganini qaytaradi.
+// Mantiq schedule.service.ts da — chatbotning jadval tooli ham shundan foydalanadi.
 router.get('/current', async (_req: Request, res: Response, next: NextFunction) => {
   try {
-    const now = new Date();
-    // Toshkent vaqti (UTC+5)
-    const tashkentOffset = 5 * 60;
-    const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
-    const localMinutes = (utcMinutes + tashkentOffset) % (24 * 60);
-    const currentTime = `${String(Math.floor(localMinutes / 60)).padStart(2, '0')}:${String(localMinutes % 60).padStart(2, '0')}`;
-    const dayOfWeek = ((now.getUTCDay() + (utcMinutes + tashkentOffset >= 24 * 60 ? 1 : 0)) % 7);
-    // 0=Yakshanba → bizda 1=Dushanba...6=Shanba
-    const dbDay = dayOfWeek === 0 ? null : dayOfWeek; // Yakshanba bo'lsa dars yo'q
-
-    if (!dbDay) {
-      res.json({ success: true, data: { is_lesson: false, message: 'Bugun dam olish kuni' } });
-      return;
-    }
-
-    // Hozirgi dars vaqtini topish
-    const { rows: lessonTimes } = await pool.query(
-      `SELECT * FROM lesson_times
-       WHERE start_time <= $1::time AND end_time >= $1::time`,
-      [currentTime]
-    );
-
-    if (!lessonTimes.length) {
-      // Keyingi darsni topish
-      const { rows: nextLesson } = await pool.query(
-        `SELECT lt.*, s.name AS subject_name, c.name AS class_name
-         FROM lesson_times lt
-         JOIN schedule sch ON sch.shift = lt.shift AND sch.lesson_num = lt.lesson_num
-         JOIN subjects s ON s.id = sch.subject_id
-         JOIN classes c ON c.id = sch.class_id
-         WHERE lt.start_time > $1::time AND sch.day_of_week = $2
-         ORDER BY lt.start_time ASC
-         LIMIT 1`,
-        [currentTime, dbDay]
-      );
-
-      res.json({
-        success: true,
-        data: {
-          is_lesson: false,
-          next_lesson: nextLesson[0] || null,
-          current_time: currentTime,
-        },
-      });
-      return;
-    }
-
-    const lt = lessonTimes[0];
-
-    // Bu darsni o'tayotgan sinflarni topish
-    const { rows: currentClasses } = await pool.query(
-      `SELECT
-        c.name AS class_name,
-        c.shift,
-        s.name AS subject_name,
-        u.full_name AS teacher_name,
-        sch.room,
-        lt.start_time,
-        lt.end_time,
-        lt.lesson_num
-       FROM schedule sch
-       JOIN classes c ON c.id = sch.class_id
-       JOIN subjects s ON s.id = sch.subject_id
-       LEFT JOIN users u ON u.id = sch.teacher_id
-       JOIN lesson_times lt ON lt.shift = sch.shift AND lt.lesson_num = sch.lesson_num
-       WHERE sch.day_of_week = $1
-         AND lt.start_time <= $2::time
-         AND lt.end_time >= $2::time
-       ORDER BY c.grade, c.letter`,
-      [dbDay, currentTime]
-    );
-
-    res.json({
-      success: true,
-      data: {
-        is_lesson: true,
-        lesson_num: lt.lesson_num,
-        shift: lt.shift,
-        start_time: lt.start_time,
-        end_time: lt.end_time,
-        current_time: currentTime,
-        classes: currentClasses,
-      },
-    });
+    const data = await getCurrentLesson();
+    res.json({ success: true, data });
   } catch (err) {
     next(err);
   }

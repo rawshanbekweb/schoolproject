@@ -83,6 +83,8 @@
       "dashboard": "Dashboard",
       "users": "Paydalanıwshılar",
       "subjects": "Pánler",
+      "otmMajors": "OTM baǵdarları",
+      "otmCalibration": "Nátiyjeler hám kalibrovka",
       "schedule": "Sabaq keste",
       "news": "Jańalıqlar",
       "achievements": "Mektep maqtanıshları",
@@ -152,8 +154,17 @@
     "news": {
       "title": "Jańalıqlar",
       "subtitle": "Mektep ómirinen sońǵı xabarlar",
-      "categories": { "all": "Barlıǵı", "news": "Jańalıqlar", "event": "Ilajlar", "announcement": "Jarıyalar" },
-      "categoryLabels": { "news": "Jańalıq", "event": "Ilaj", "announcement": "Jarıya" },
+      "categories": {
+        "all": "Barlıǵı",
+        "news": "Jańalıqlar",
+        "event": "Ilajlar",
+        "announcement": "Jarıyalar"
+      },
+      "categoryLabels": {
+        "news": "Jańalıq",
+        "event": "Ilaj",
+        "announcement": "Jarıya"
+      },
       "empty": "Jańalıqlar háli joq",
       "emptySub": "Juwıqta qosıladı"
     },
@@ -321,12 +332,30 @@
       "perQuestion": "hár soraw {{points}} bal",
       "sectionAnswered": "{{count}}/{{total}} juwap berildi",
       "scoreFraction": "{{score}}/{{max}} bal",
-      "sectionScore": "{{score}} bal"
+      "sectionScore": "{{score}} bal",
+      "otmTitle": "OTM usınısı",
+      "otmLoading": "Usınıslar esaplanbaqta...",
+      "otmEmpty": "Házirshe bul testtiń pánlerine sáykes baǵdar tabılmadı",
+      "otmMatch": "Sáykeslik: {{pct}}%",
+      "otmCutoff": "Ótiw ballınıń ortashası: {{pct}}%",
+      "otmCategory": {
+        "yuqori_ehtimol": "Joqarı sanaw",
+        "chegara_oldi": "Shegara boyı",
+        "past_ehtimol": "Tómen sanaw"
+      },
+      "otmCalibrated": "Kalibrovkalanǵan esap"
     },
     "schedule": {
       "title": "Sabaq keste",
       "subtitle": "Aptalıq sabaq keste hám waqıtlar",
-      "days": ["Dúyshembi", "Siyshembi", "Sárshembi", "Piyshembi", "Juma", "Shembi"],
+      "days": [
+        "Dúyshembi",
+        "Siyshembi",
+        "Sárshembi",
+        "Piyshembi",
+        "Juma",
+        "Shembi"
+      ],
       "selectPlaceholder": "Klasstı tańlań...",
       "gradeGroup": "{{grade}}-klasslar",
       "classOption": "{{name}} ({{shift}}-smena, {{count}} oqıwshı)",
@@ -424,6 +453,62 @@
       "teacherCountSuffix": "oqıtıwshı",
       "deleteTitle": "Pándi óshiriw",
       "deleteDesc": "pánin óshiresiz be? Bul háreketti qaytarıp bolmaydı."
+    },
+    "otmMajors": {
+      "title": "OTM baǵdarları",
+      "subtitle": "Baǵdar, kerekli pánler hám sońǵı jıllardaǵı ótiw ballların basqarıw",
+      "countSuffix": "{{count}} baǵdar",
+      "newMajor": "Jańa baǵdar",
+      "createTitle": "Jańa baǵdar",
+      "editTitle": "Baǵdardı redaktorlaw",
+      "universityLabel": "OTM atı *",
+      "universityPlaceholder": "mısalı: TATU",
+      "majorNameLabel": "Baǵdar atı *",
+      "majorNamePlaceholder": "mısalı: Programma injiniringi",
+      "add": "Qosıw",
+      "genericError": "Qátelik",
+      "empty": "Baǵdar tabılmadı",
+      "addFirst": "Birinshi baǵdardı qosıw",
+      "subjectsSectionTitle": "Kerekli pánler",
+      "noSubjects": "Pán biriktirilmegen",
+      "selectSubject": "Pán tańlań",
+      "weightLabel": "Awırlıq",
+      "cutoffsSectionTitle": "Jıllıq ótiw ballları",
+      "noCutoffs": "Bal kirgizilmegen",
+      "yearLabel": "Jıl",
+      "cutoffScoreLabel": "Ótiw balı",
+      "maxScoreLabel": "Maksimal bal",
+      "deleteTitle": "Baǵdardı óshiriw",
+      "deleteDesc": "baǵdardı óshiresiz be? Bul háreketti qaytarıp bolmaydı."
+    },
+    "otmCalibration": {
+      "title": "Nátiyjeler hám kalibrovka",
+      "subtitle": "Bitiruwshilerdiń real DTM nátiyjelerin kirgizip, usınıs mexanizmin kalibrovkalaw",
+      "statusTitle": "Ámeldegi kalibrovka",
+      "statusActive": "Ámelde: hár 1% ishki procentke {{slope}}x, jılısıw {{intercept}}",
+      "statusInactive": "Kalibrovka ele ámelde emes — {{count}}/{{min}} nátiyje jıynalǵan",
+      "recalibrate": "Qayta kalibrovkalaw",
+      "recalibrateError": "Kalibrovka orınlanbadı",
+      "newReport": "Jańa nátiyje qosıw",
+      "studentNameLabel": "Oqıwshı atı",
+      "classLabel": "Klass",
+      "graduationYearLabel": "Bitirgen jılı",
+      "majorLabel": "Bahalanǵan baǵdar",
+      "internalPctLabel": "Ishki test procenti (%)",
+      "realScoreLabel": "Real DTM balı",
+      "realMaxScoreLabel": "DTM maksimal balı",
+      "admittedLabel": "Kirdi",
+      "notesLabel": "Eslatpa",
+      "add": "Qosıw",
+      "genericError": "Qátelik",
+      "empty": "Ele nátiyje kirgizilmegen",
+      "deleteTitle": "Nátiyjeni óshiriw",
+      "deleteDesc": "nátiyjesin óshiresiz be?",
+      "tableStudent": "Oqıwshı",
+      "tableMajor": "Baǵdar",
+      "tableInternal": "Ishki %",
+      "tableReal": "Real bal",
+      "tableAdmitted": "Kirdi"
     },
     "news": {
       "title": "Jańalıqlar basqarıwı",
@@ -726,6 +811,27 @@
       "closedStatus": "Jabıq",
       "confirmDeleteTitle": "Blok testti óshiresiz be?",
       "confirmDeleteDesc": "Barlıq bólim hám nátiyjeler de óshedi."
+    }
+  },
+  "chat": {
+    "title": "Mektep járdemshisi",
+    "subtitle": "Mektep haqqindag‘i sorawlarg‘a juwap beremen",
+    "open": "Járdemshini ashiw",
+    "close": "Jabiw",
+    "reset": "Sáwbetti tazalaw",
+    "send": "Jiberiw",
+    "placeholder": "Sorawinızdi jazinız...",
+    "emptyState": "Sálem! Mektep haqqinda neni bilginız keledi?",
+    "sources": "Derekler:",
+    "disclaimer": "Juwaplar mektep saytinıǹ mag‘liwmatlarina tiykarlanadi",
+    "errorRateLimit": "Júda kóp soraw jiberdinız. Azg‘ana kutip, qayta urinip kórinız.",
+    "errorUnavailable": "Járdemshi waqtinsha islemey tur. Azdan keyin urinip kórinız.",
+    "errorGeneric": "Qátelik juz berdi. Qayta urinip kórinız.",
+    "suggestions": {
+      "s1": "Mektepke qabillaw qalay ámelge asiriladi?",
+      "s2": "Sabaq kestesi qanday?",
+      "s3": "Mektep qashan shólkemlestirilgen?",
+      "s4": "Qanday hújjetler kerek?"
     }
   }
 }

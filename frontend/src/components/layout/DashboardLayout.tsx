@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { apiClient } from '../../api/client';
 import PageLoader from '../ui/PageLoader';
+import ChatWidget from '../chat/ChatWidget';
 
 interface DashboardLayoutProps {
   role: 'admin' | 'teacher';
@@ -17,6 +18,8 @@ const superAdminLinks = [
   { to: '/admin', labelKey: 'dashboard.nav.dashboard', icon: LayoutDashboard, exact: true },
   { to: '/admin/users', labelKey: 'dashboard.nav.users', icon: Users },
   { to: '/admin/subjects', labelKey: 'dashboard.nav.subjects', icon: BookOpen },
+  { to: '/admin/otm-majors', labelKey: 'dashboard.nav.otmMajors', icon: GraduationCap },
+  { to: '/admin/otm-calibration', labelKey: 'dashboard.nav.otmCalibration', icon: BarChart3 },
   { to: '/admin/schedule', labelKey: 'dashboard.nav.schedule', icon: CalendarDays },
   { to: '/admin/news', labelKey: 'dashboard.nav.news', icon: Newspaper },
   { to: '/admin/achievements', labelKey: 'dashboard.nav.achievements', icon: Trophy },
@@ -175,6 +178,8 @@ export default function DashboardLayout({ role }: DashboardLayoutProps) {
           </Suspense>
         </main>
       </div>
+
+      <ChatWidget />
     </div>
   );
 }

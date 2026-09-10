@@ -2,11 +2,17 @@ import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import {
   Layers, ChevronRight, CheckCircle, XCircle,
-  RotateCcw, Loader2, Trophy, Clock, X, Users, BookOpen,
+  RotateCcw, Loader2, Trophy, Clock, X, Users, BookOpen, GraduationCap,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { apiClient } from '../../api/client';
-import { BlockTest, BlockTestSectionResult } from '../../types';
+import { BlockTest, BlockTestSectionResult, OtmRecommendation } from '../../types';
+
+const OTM_CATEGORY_STYLE: Record<string, string> = {
+  yuqori_ehtimol: 'bg-green-50 text-green-700 border-green-200',
+  chegara_oldi: 'bg-amber-50 text-amber-700 border-amber-200',
+  past_ehtimol: 'bg-red-50 text-red-700 border-red-200',
+};
 
 type AnswerLetter = 'A' | 'B' | 'C' | 'D';
 type Step = 'list' | 'exam' | 'result';
@@ -77,6 +83,12 @@ export default function BlockTestsPage() {
   const { data: tests = [], isLoading } = useQuery<BlockTest[]>({
     queryKey: ['block-tests-public'],
     queryFn: () => apiClient.get('/block-tests').then(r => r.data.data),
+  });
+
+  const { data: otmData, isLoading: otmLoading } = useQuery<{ recommendations: OtmRecommendation[]; disclaimer: string }>({
+    queryKey: ['otm-tavsiya', result?.id],
+    queryFn: () => apiClient.get(`/otm-tavsiya/session/${result!.id}`).then(r => r.data.data),
+    enabled: step === 'result' && !!result,
   });
 
   const submitMutation = useMutation({
@@ -320,6 +332,40 @@ export default function BlockTestsPage() {
                   </span>
                 </div>
               ))}
+            </div>
+
+            <div className="mb-6 text-left">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                <GraduationCap className="w-3.5 h-3.5" /> {t('public.blockTests.otmTitle')}
+              </p>
+              {otmLoading ? (
+                <div className="flex items-center gap-2 text-sm text-gray-400 py-3">
+                  <Loader2 className="w-4 h-4 animate-spin" /> {t('public.blockTests.otmLoading')}
+                </div>
+              ) : !otmData || otmData.recommendations.length === 0 ? (
+                <p className="text-sm text-gray-400 py-2">{t('public.blockTests.otmEmpty')}</p>
+              ) : (
+                <div className="space-y-2">
+                  {otmData.recommendations.map(rec => (
+                    <div key={rec.major_id} className={`rounded-lg px-3 py-2 border ${OTM_CATEGORY_STYLE[rec.category]}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium">{rec.major_name}</span>
+                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-white/70">
+                          {t(`public.blockTests.otmCategory.${rec.category}`)}
+                        </span>
+                      </div>
+                      <p className="text-xs opacity-80 mt-0.5">{rec.university_name}</p>
+                      <p className="text-xs opacity-70 mt-1">
+                        {t('public.blockTests.otmMatch', { pct: rec.weighted_pct })} · {t('public.blockTests.otmCutoff', { pct: rec.avg_cutoff_pct })}
+                      </p>
+                      {rec.calibrated && (
+                        <p className="text-xs opacity-60 mt-0.5 italic">{t('public.blockTests.otmCalibrated')}</p>
+                      )}
+                    </div>
+                  ))}
+                  <p className="text-xs text-gray-400 pt-1">{otmData.disclaimer}</p>
+                </div>
+              )}
             </div>
 
             <button onClick={handleReset} className="btn-primary w-full flex items-center justify-center gap-2 py-3">

@@ -217,6 +217,44 @@ export interface BlockTestSessionResult {
   finished_at: string;
 }
 
+export type OtmMatchCategory = 'yuqori_ehtimol' | 'chegara_oldi' | 'past_ehtimol';
+
+export interface OtmRecommendation {
+  major_id: number;
+  university_name: string;
+  major_name: string;
+  weighted_pct: number;
+  avg_cutoff_pct: number;
+  diff: number;
+  category: OtmMatchCategory;
+  calibrated: boolean;
+  calibration_sample_size: number;
+}
+
+export interface OtmOutcomeReport {
+  id: number;
+  student_name: string;
+  class_name: string | null;
+  graduation_year: number;
+  major_id: number;
+  university_name: string | null;
+  major_name: string | null;
+  internal_weighted_pct: number;
+  real_dtm_score: number;
+  real_dtm_max_score: number;
+  was_admitted: boolean | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface OtmCalibration {
+  id: number;
+  slope: number;
+  intercept: number;
+  sample_size: number;
+  computed_at: string;
+}
+
 // ===== MAKTAB HAQIDA =====
 export interface SchoolInfo {
   id: number;

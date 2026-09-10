@@ -5,7 +5,10 @@
     "dev": "tsx watch src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
-    "migrate": "tsx migrations/run.ts"
+    "migrate": "tsx migrations/run.ts",
+    "test:chatbot": "tsx scripts/chatbot-e2e.ts",
+    "test:chatbot-intent": "tsx scripts/chatbot-intent.ts",
+    "test:chatbot-quality": "tsx scripts/chatbot-quality.ts"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

@@ -83,6 +83,8 @@
       "dashboard": "Dashboard",
       "users": "Users",
       "subjects": "Subjects",
+      "otmMajors": "University majors",
+      "otmCalibration": "Outcomes & calibration",
       "schedule": "Schedule",
       "news": "News",
       "achievements": "School achievements",
@@ -152,8 +154,17 @@
     "news": {
       "title": "News",
       "subtitle": "Latest news from school life",
-      "categories": { "all": "All", "news": "News", "event": "Events", "announcement": "Announcements" },
-      "categoryLabels": { "news": "News", "event": "Event", "announcement": "Announcement" },
+      "categories": {
+        "all": "All",
+        "news": "News",
+        "event": "Events",
+        "announcement": "Announcements"
+      },
+      "categoryLabels": {
+        "news": "News",
+        "event": "Event",
+        "announcement": "Announcement"
+      },
       "empty": "No news yet",
       "emptySub": "Coming soon"
     },
@@ -326,12 +337,30 @@
       "perQuestion": "{{points}} points per question",
       "sectionAnswered": "{{count}}/{{total}} answered",
       "scoreFraction": "{{score}}/{{max}} points",
-      "sectionScore": "{{score}} points"
+      "sectionScore": "{{score}} points",
+      "otmTitle": "University match",
+      "otmLoading": "Calculating recommendations...",
+      "otmEmpty": "No matching majors found for this test's subjects yet",
+      "otmMatch": "Match: {{pct}}%",
+      "otmCutoff": "Average cutoff score: {{pct}}%",
+      "otmCategory": {
+        "yuqori_ehtimol": "High chance",
+        "chegara_oldi": "Borderline",
+        "past_ehtimol": "Low chance"
+      },
+      "otmCalibrated": "Calibrated estimate"
     },
     "schedule": {
       "title": "Class schedule",
       "subtitle": "Weekly lesson schedule and times",
-      "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+      "days": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday"
+      ],
       "selectPlaceholder": "Select class...",
       "gradeGroup": "Grade {{grade}}",
       "classOption_one": "{{name}} (Shift {{shift}}, {{count}} student)",
@@ -432,6 +461,62 @@
       "teacherCountSuffix": "teachers",
       "deleteTitle": "Delete subject",
       "deleteDesc": "delete this subject? This action cannot be undone."
+    },
+    "otmMajors": {
+      "title": "University majors",
+      "subtitle": "Manage majors, required subjects and recent years' cutoff scores",
+      "countSuffix": "{{count}} majors",
+      "newMajor": "New major",
+      "createTitle": "New major",
+      "editTitle": "Edit major",
+      "universityLabel": "University name *",
+      "universityPlaceholder": "e.g.: TATU",
+      "majorNameLabel": "Major name *",
+      "majorNamePlaceholder": "e.g.: Software Engineering",
+      "add": "Add",
+      "genericError": "Error",
+      "empty": "No majors found",
+      "addFirst": "Add the first major",
+      "subjectsSectionTitle": "Required subjects",
+      "noSubjects": "No subjects linked",
+      "selectSubject": "Select subject",
+      "weightLabel": "Weight",
+      "cutoffsSectionTitle": "Yearly cutoff scores",
+      "noCutoffs": "No scores entered",
+      "yearLabel": "Year",
+      "cutoffScoreLabel": "Cutoff score",
+      "maxScoreLabel": "Max possible score",
+      "deleteTitle": "Delete major",
+      "deleteDesc": "delete this major? This action cannot be undone."
+    },
+    "otmCalibration": {
+      "title": "Outcomes & calibration",
+      "subtitle": "Enter graduates' real DTM results to calibrate the recommendation engine",
+      "statusTitle": "Current calibration",
+      "statusActive": "Active: {{slope}}x per 1% internal score, offset {{intercept}}",
+      "statusInactive": "Calibration not active yet — {{count}}/{{min}} reports collected",
+      "recalibrate": "Recalibrate",
+      "recalibrateError": "Calibration failed",
+      "newReport": "Add a new report",
+      "studentNameLabel": "Student name",
+      "classLabel": "Class",
+      "graduationYearLabel": "Graduation year",
+      "majorLabel": "Major evaluated against",
+      "internalPctLabel": "Internal test score (%)",
+      "realScoreLabel": "Real DTM score",
+      "realMaxScoreLabel": "DTM max score",
+      "admittedLabel": "Admitted",
+      "notesLabel": "Notes",
+      "add": "Add",
+      "genericError": "Error",
+      "empty": "No reports entered yet",
+      "deleteTitle": "Delete report",
+      "deleteDesc": "delete this report?",
+      "tableStudent": "Student",
+      "tableMajor": "Major",
+      "tableInternal": "Internal %",
+      "tableReal": "Real score",
+      "tableAdmitted": "Admitted"
     },
     "news": {
       "title": "News management",
@@ -743,6 +828,27 @@
       "closedStatus": "Closed",
       "confirmDeleteTitle": "Delete this block test?",
       "confirmDeleteDesc": "All sections and results will also be deleted."
+    }
+  },
+  "chat": {
+    "title": "School assistant",
+    "subtitle": "I answer questions about the school",
+    "open": "Open assistant",
+    "close": "Close",
+    "reset": "Clear conversation",
+    "send": "Send",
+    "placeholder": "Type your question...",
+    "emptyState": "Hello! What would you like to know about the school?",
+    "sources": "Sources:",
+    "disclaimer": "Answers are based on the school website content",
+    "errorRateLimit": "Too many questions. Please wait a moment and try again.",
+    "errorUnavailable": "The assistant is temporarily unavailable. Please try again later.",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "suggestions": {
+      "s1": "How does school admission work?",
+      "s2": "What is the class schedule?",
+      "s3": "When was the school founded?",
+      "s4": "What documents are required?"
     }
   }
 }

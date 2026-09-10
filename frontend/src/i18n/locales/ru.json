@@ -83,6 +83,8 @@
       "dashboard": "Дашборд",
       "users": "Пользователи",
       "subjects": "Предметы",
+      "otmMajors": "Направления ВУЗов",
+      "otmCalibration": "Результаты и калибровка",
       "schedule": "Расписание",
       "news": "Новости",
       "achievements": "Достижения школы",
@@ -152,8 +154,17 @@
     "news": {
       "title": "Новости",
       "subtitle": "Последние новости из жизни школы",
-      "categories": { "all": "Все", "news": "Новости", "event": "Мероприятия", "announcement": "Объявления" },
-      "categoryLabels": { "news": "Новость", "event": "Мероприятие", "announcement": "Объявление" },
+      "categories": {
+        "all": "Все",
+        "news": "Новости",
+        "event": "Мероприятия",
+        "announcement": "Объявления"
+      },
+      "categoryLabels": {
+        "news": "Новость",
+        "event": "Мероприятие",
+        "announcement": "Объявление"
+      },
       "empty": "Новостей пока нет",
       "emptySub": "Скоро появятся"
     },
@@ -331,12 +342,30 @@
       "perQuestion": "по {{points}} балла за вопрос",
       "sectionAnswered": "Отвечено {{count}}/{{total}}",
       "scoreFraction": "{{score}}/{{max}} баллов",
-      "sectionScore": "{{score}} баллов"
+      "sectionScore": "{{score}} баллов",
+      "otmTitle": "Рекомендация по ВУЗу",
+      "otmLoading": "Расчёт рекомендаций...",
+      "otmEmpty": "Пока нет направлений, подходящих по предметам этого теста",
+      "otmMatch": "Соответствие: {{pct}}%",
+      "otmCutoff": "Средний проходной балл: {{pct}}%",
+      "otmCategory": {
+        "yuqori_ehtimol": "Высокая вероятность",
+        "chegara_oldi": "Погранично",
+        "past_ehtimol": "Низкая вероятность"
+      },
+      "otmCalibrated": "Калиброванная оценка"
     },
     "schedule": {
       "title": "Расписание",
       "subtitle": "Недельное расписание уроков и время",
-      "days": ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота"],
+      "days": [
+        "Понедельник",
+        "Вторник",
+        "Среда",
+        "Четверг",
+        "Пятница",
+        "Суббота"
+      ],
       "selectPlaceholder": "Выберите класс...",
       "gradeGroup": "{{grade}}-е классы",
       "classOption_one": "{{name}} ({{shift}}-я смена, {{count}} ученик)",
@@ -440,6 +469,62 @@
       "teacherCountSuffix": "учителей",
       "deleteTitle": "Удалить предмет",
       "deleteDesc": "— удалить этот предмет? Это действие необратимо."
+    },
+    "otmMajors": {
+      "title": "Направления ВУЗов",
+      "subtitle": "Управление направлениями, нужными предметами и проходными баллами за последние годы",
+      "countSuffix": "{{count}} направлений",
+      "newMajor": "Новое направление",
+      "createTitle": "Новое направление",
+      "editTitle": "Редактировать направление",
+      "universityLabel": "Название ВУЗа *",
+      "universityPlaceholder": "например: ТУИТ",
+      "majorNameLabel": "Название направления *",
+      "majorNamePlaceholder": "например: Программная инженерия",
+      "add": "Добавить",
+      "genericError": "Ошибка",
+      "empty": "Направления не найдены",
+      "addFirst": "Добавить первое направление",
+      "subjectsSectionTitle": "Нужные предметы",
+      "noSubjects": "Предметы не привязаны",
+      "selectSubject": "Выберите предмет",
+      "weightLabel": "Вес",
+      "cutoffsSectionTitle": "Проходные баллы по годам",
+      "noCutoffs": "Баллы не введены",
+      "yearLabel": "Год",
+      "cutoffScoreLabel": "Проходной балл",
+      "maxScoreLabel": "Максимальный балл",
+      "deleteTitle": "Удалить направление",
+      "deleteDesc": "— удалить это направление? Это действие необратимо."
+    },
+    "otmCalibration": {
+      "title": "Результаты и калибровка",
+      "subtitle": "Введите реальные результаты ДТМ выпускников для калибровки механизма рекомендаций",
+      "statusTitle": "Текущая калибровка",
+      "statusActive": "Активна: {{slope}}x на 1% внутреннего балла, смещение {{intercept}}",
+      "statusInactive": "Калибровка пока не активна — собрано {{count}}/{{min}} результатов",
+      "recalibrate": "Пересчитать калибровку",
+      "recalibrateError": "Калибровка не удалась",
+      "newReport": "Добавить результат",
+      "studentNameLabel": "Имя ученика",
+      "classLabel": "Класс",
+      "graduationYearLabel": "Год окончания",
+      "majorLabel": "Оцениваемое направление",
+      "internalPctLabel": "Внутренний тест (%)",
+      "realScoreLabel": "Реальный балл ДТМ",
+      "realMaxScoreLabel": "Максимальный балл ДТМ",
+      "admittedLabel": "Поступил",
+      "notesLabel": "Примечание",
+      "add": "Добавить",
+      "genericError": "Ошибка",
+      "empty": "Результаты пока не введены",
+      "deleteTitle": "Удалить результат",
+      "deleteDesc": "удалить этот результат?",
+      "tableStudent": "Ученик",
+      "tableMajor": "Направление",
+      "tableInternal": "Внутр. %",
+      "tableReal": "Реальный балл",
+      "tableAdmitted": "Поступил"
     },
     "news": {
       "title": "Управление новостями",
@@ -760,6 +845,27 @@
       "closedStatus": "Закрыт",
       "confirmDeleteTitle": "Удалить блок-тест?",
       "confirmDeleteDesc": "Все разделы и результаты тоже будут удалены."
+    }
+  },
+  "chat": {
+    "title": "Помощник школы",
+    "subtitle": "Отвечаю на вопросы о школе",
+    "open": "Открыть помощника",
+    "close": "Закрыть",
+    "reset": "Очистить диалог",
+    "send": "Отправить",
+    "placeholder": "Напишите вопрос...",
+    "emptyState": "Здравствуйте! Что вы хотите узнать о школе?",
+    "sources": "Источники:",
+    "disclaimer": "Ответы основаны на данных сайта школы",
+    "errorRateLimit": "Слишком много вопросов. Подождите немного и попробуйте снова.",
+    "errorUnavailable": "Помощник временно недоступен. Попробуйте позже.",
+    "errorGeneric": "Произошла ошибка. Попробуйте ещё раз.",
+    "suggestions": {
+      "s1": "Как проходит приём в школу?",
+      "s2": "Какое расписание уроков?",
+      "s3": "Когда основана школа?",
+      "s4": "Какие документы нужны?"
     }
   }
 }

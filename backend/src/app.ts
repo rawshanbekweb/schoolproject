@@ -22,6 +22,8 @@ import mediaRouter from './modules/media/media.router';
 import subjectsRouter from './modules/subjects/subjects.router';
 import testConfigsRouter from './modules/test-configs/test-configs.router';
 import blockTestsRouter from './modules/block-tests/block-tests.router';
+import chatbotRouter from './modules/chatbot/chatbot.router';
+import otmTavsiyaRouter from './modules/otm-tavsiya/otm-tavsiya.router';
 import extraRouter from './modules/extra/extra.router';
 
 dotenv.config();
@@ -30,6 +32,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ===== MIDDLEWARE =====
+// Render/Vercel kabi platformalarda ilova bitta reverse proxy ortida ishlaydi.
+// Busiz req.ip proxy manzilini qaytaradi va IP bo'yicha cheklovlar (login
+// bruteforce, chatbot limiti) barcha foydalanuvchilar uchun umumiy bo'lib qoladi.
+app.set('trust proxy', 1);
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
 }));
@@ -80,6 +87,8 @@ app.use('/api/media', mediaRouter);
 app.use('/api/subjects', subjectsRouter);
 app.use('/api/test-configs', testConfigsRouter);
 app.use('/api/block-tests', blockTestsRouter);
+app.use('/api/chatbot', chatbotRouter);
+app.use('/api/otm-tavsiya', otmTavsiyaRouter);
 app.use('/api', extraRouter); // school-info, contacts, documents, teachers, classes
 
 // Health check
